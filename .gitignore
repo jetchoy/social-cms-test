@@ -1,0 +1,17 @@
+# Claude Code project data
+.claude/
+
+# Backup / working copies
+*copy*
+* copy*
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Editor directories
+.idea/
+.vscode/
+*.swp
+*.swo

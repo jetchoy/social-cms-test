@@ -1,0 +1,2141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tatler Social CMS — Create Post</title>
+
+  <!--
+    FONTS: Geist by Vercel
+    Vue/Laravel: Add via vite/laravel-mix or @fontsource/geist
+  -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&display=swap" rel="stylesheet" />
+
+  <!--
+    ICONS: Lucide
+    Vue/Laravel: npm install lucide-vue-next
+    Usage: import { PanelLeft, SquarePen, ... } from 'lucide-vue-next'
+  -->
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+
+  <!--
+    DRAG & DROP: SortableJS
+    Vue/Laravel: npm install vue-draggable-plus  (wraps SortableJS)
+  -->
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.3/Sortable.min.js"></script>
+
+  <!--
+    IMAGE CROP: Cropper.js  (aspect-ratio locked 4:5)
+    Vue/Laravel: npm install cropperjs  +  vue-cropperjs wrapper
+  -->
+  <link rel="stylesheet" href="https://unpkg.com/cropperjs@1.6.2/dist/cropper.min.css" />
+  <script src="https://unpkg.com/cropperjs@1.6.2/dist/cropper.min.js"></script>
+
+  <!--
+    IMAGE EDITOR: Filerobot Image Editor
+    Vue/Laravel: npm install filerobot-image-editor  (or use CDN bundle)
+    Production:  pin to a specific version, e.g.:
+    <script src="https://cdn.jsdelivr.net/npm/filerobot-image-editor@4.8.1/dist/filerobot-image-editor.min.js">
+  -->
+  <script src="https://scaleflex.cloudimg.io/v7/plugins/filerobot-image-editor/latest/filerobot-image-editor.min.js"></script>
+
+  <style>
+    /* ================================================================
+       DESIGN TOKENS
+       Vue/Laravel: Extract to tokens.css or tailwind.config.js theme
+       ================================================================ */
+    :root {
+      /* — Colour palette (Shadcn / Slate) — */
+      --white:        #ffffff;
+      --blue-500:     #3b82f6;
+      --blue-600:     #2563eb;
+      --slate-100:    #f1f5f9;
+      --slate-200:    #e2e8f0;
+      --slate-300:    #cbd5e1;
+      --slate-400:    #94a3b8;
+      --slate-600:    #475569;
+      --slate-700:    #334155;
+      --slate-900:    #0f172a;
+      --red-500:      #ef4444;
+
+      /* — Shadow — */
+      --shadow-s:     0px 2px 6px 0px rgba(0, 0, 0, 0.05);
+
+      /* — Radius — */
+      --radius-sm:    4px;
+      --radius-md:    6px;
+      --radius-lg:    8px;
+      --radius-xl:    16px;
+
+      /* — Typography — */
+      --font:         'Geist', ui-sans-serif, system-ui, sans-serif;
+      --text-sm:      14px;
+      --text-md:      16px;
+      --text-lg:      20px;
+      --lh-sm:        20px;
+      --lh-md:        24px;
+
+      /* — Layout — */
+      --sidebar-open:   240px;
+      --sidebar-closed:  72px;
+      --header-h:        56px;
+      --footer-h:        72px;
+
+      /* — Transitions — */
+      --t-fast:   150ms ease;
+      --t-normal: 200ms ease;
+    }
+
+    /* ================================================================
+       RESET & BASE
+       ================================================================ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      height: 100%;
+      overflow: hidden;
+      background: var(--slate-100);
+    }
+
+    body {
+      font-family: var(--font);
+      font-size: var(--text-md);
+      line-height: var(--lh-md);
+      color: var(--slate-700);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    button, input { font-family: inherit; }
+    button { cursor: pointer; }
+
+    /* ================================================================
+       APP SHELL
+       ================================================================ */
+    .app {
+      display: flex;
+      align-items: stretch;
+      height: 100vh;
+      padding-right: 8px;
+    }
+
+    /* ================================================================
+       SIDEBAR
+       @vue-component  AppSidebar
+       @props          open: Boolean
+       @emits          toggle
+       ================================================================ */
+    .sidebar {
+      flex-shrink: 0;
+      width: var(--sidebar-open);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      padding: 16px;
+      overflow: hidden;
+      transition: width var(--t-normal);
+      will-change: width;
+    }
+
+    .sidebar.is-closed { width: var(--sidebar-closed); }
+
+    /* Logo */
+    .sidebar-logo {
+      flex-shrink: 0;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      padding: 0 8px;
+      overflow: hidden;
+    }
+    .sidebar-logo img         { height: 32px; width: auto; display: block; flex-shrink: 0; }
+    /* Visibility is on the wrapper divs — survives any img onerror replacement */
+    .sidebar-logo__full       { display: flex; align-items: center; }
+    .sidebar-logo__icon       { display: none;  align-items: center; }
+    .sidebar.is-closed .sidebar-logo__full { display: none;  }
+    .sidebar.is-closed .sidebar-logo__icon { display: flex; }
+    .sidebar.is-closed .sidebar-logo       { padding: 0; justify-content: center; }
+
+    /* Create button */
+    .sidebar-create { flex-shrink: 0; }
+    .sidebar.is-closed .sidebar-create .btn-create {
+      width: 40px;
+      padding: 8px;
+    }
+    .sidebar.is-closed .sidebar-create .btn-label { display: none; }
+
+    /* Nav */
+    .sidebar-nav {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      height: 40px;
+      padding: 8px 12px;
+      border-radius: var(--radius-lg);
+      background: none;
+      border: none;
+      color: var(--slate-700);
+      font-size: var(--text-md);
+      font-weight: 400;
+      line-height: var(--lh-md);
+      white-space: nowrap;
+      text-align: left;
+      width: 100%;
+      transition: background-color var(--t-fast);
+    }
+    .nav-item:hover,
+    .nav-item.is-active {
+      background-color: var(--slate-200);
+      color: var(--slate-900);
+      font-weight: 600;
+    }
+
+    .nav-item__icon { flex-shrink: 0; width: 16px; height: 16px; display: flex; align-items: center; justify-content: center; }
+    .nav-item__icon svg { width: 16px; height: 16px; }
+
+    /* Collapse label smoothly */
+    .nav-item__label {
+      overflow: hidden;
+      white-space: nowrap;
+      max-width: 200px;
+      opacity: 1;
+      transition: max-width var(--t-normal), opacity var(--t-fast);
+    }
+    .sidebar.is-closed .nav-item__label {
+      max-width: 0;
+      opacity: 0;
+    }
+
+    /* ================================================================
+       MAIN
+       ================================================================ */
+    .main {
+      flex: 1;
+      min-width: 0;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      padding: 8px 0;
+    }
+
+    /* White rounded card */
+    .card {
+      flex: 1;
+      min-height: 0;
+      background: var(--white);
+      border: 1px solid var(--slate-200);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-s);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* ================================================================
+       HEADER
+       @vue-component  CreatePostHeader
+       @props          postTitle: String, sidebarOpen: Boolean
+       @emits          toggle-sidebar, update:post-title
+       ================================================================ */
+    .header {
+      flex-shrink: 0;
+      height: var(--header-h);
+      background: var(--white);
+      border-bottom: 1px solid var(--slate-200);
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 8px 24px;
+      overflow: hidden;
+    }
+
+    /* Sidebar toggle */
+    .sidebar-toggle {
+      flex-shrink: 0;
+      background: none;
+      border: none;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--slate-700);
+      transition: opacity var(--t-fast);
+    }
+    .sidebar-toggle:hover { opacity: 0.6; }
+    .sidebar-toggle svg   { width: 16px; height: 16px; }
+
+    /* Breadcrumb */
+    .breadcrumb {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+    .breadcrumb__section {
+      font-size: var(--text-md);
+      font-weight: 600;
+      line-height: var(--lh-md);
+      color: var(--slate-700);
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .breadcrumb__sep { flex-shrink: 0; display: flex; align-items: center; color: var(--slate-400); }
+    .breadcrumb__sep svg { width: 16px; height: 16px; }
+
+    .breadcrumb__title {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      min-width: 0;
+    }
+
+    /* Post title — display / edit toggle */
+    .title-display {
+      font-size: var(--text-md);
+      font-weight: 400;
+      line-height: var(--lh-md);
+      color: var(--slate-700);
+      cursor: text;
+      white-space: nowrap;
+    }
+    .title-display.is-hidden,
+    .title-input.is-hidden { display: none; }
+
+    .title-input {
+      height: 40px;
+      min-width: 140px;
+      background: var(--white);
+      border: 1px solid var(--slate-300);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-s);
+      padding: 8px 12px;
+      font-size: var(--text-md);
+      font-weight: 400;
+      line-height: var(--lh-md);
+      color: var(--slate-700);
+      outline: none;
+      transition: border-color var(--t-fast), box-shadow var(--t-fast);
+    }
+    .title-input:focus {
+      border-color: var(--blue-500);
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+    }
+
+    /* Pen icon button */
+    .edit-title-btn {
+      background: none;
+      border: none;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--slate-400);
+      transition: color var(--t-fast);
+      flex-shrink: 0;
+    }
+    .edit-title-btn:hover { color: var(--slate-700); }
+    .edit-title-btn svg   { width: 12px; height: 12px; }
+
+    /* ================================================================
+       SLIDE GALLERY
+       @vue-component  SlideGallery
+       @props          slides: Slide[], selectedId: number | null
+       @emits          select(id), add, delete(id), reorder(ids[])
+       ================================================================ */
+    .gallery {
+      flex-shrink: 0;
+      background: var(--white);
+      border-bottom: 1px solid var(--slate-200);
+      padding: 24px;
+      overflow-x: auto;
+    }
+
+    .gallery__track {
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+    }
+
+    /* Sortable slides container */
+    .gallery__slides {
+      display: flex;
+      gap: 16px;
+    }
+
+    /* ---- Slide thumbnail ---- */
+    .slide-thumb {
+      position: relative;
+      width: 108px;
+      height: 135px;
+      flex-shrink: 0;
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--slate-300);
+      box-shadow: var(--shadow-s);
+      overflow: hidden;
+      cursor: pointer;
+      background: var(--white);
+      transition: border-color var(--t-fast);
+    }
+    .slide-thumb:hover:not(.slide-thumb--add) { border-color: var(--slate-400); }
+    .slide-thumb.is-selected                  { border-color: var(--blue-500) !important; }
+
+    /* Filled */
+    .slide-thumb--filled .slide-thumb__img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: var(--radius-lg);
+      display: block;
+      pointer-events: none;
+    }
+
+    /* Empty */
+    .slide-thumb--empty {
+      background: var(--slate-100);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .slide-thumb--empty .slide-thumb__icon svg {
+      width: 32px;
+      height: 32px;
+      color: var(--slate-400);
+    }
+
+    /* Add button */
+    .slide-thumb--add {
+      border-style: dashed;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background-color var(--t-fast), border-color var(--t-fast);
+    }
+    .slide-thumb--add:hover {
+      background-color: var(--slate-100);
+      border-color: var(--slate-400);
+    }
+    .slide-thumb--add .slide-thumb__icon svg {
+      width: 32px;
+      height: 32px;
+      color: var(--slate-400);
+    }
+
+    /* Delete button (top-right of selected slide) */
+    .slide-thumb__delete {
+      position: absolute;
+      top: 3px;
+      right: 3px;
+      z-index: 10;
+      background: var(--red-500);
+      border: none;
+      border-radius: var(--radius-sm);
+      padding: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--white);
+      transition: opacity var(--t-fast);
+    }
+    .slide-thumb__delete:hover { opacity: 0.8; }
+    .slide-thumb__delete svg   { width: 12px; height: 12px; }
+
+    /* SortableJS drag states */
+    .slide-thumb.sortable-ghost { opacity: 0.3; background: var(--slate-100); }
+
+    /* ================================================================
+       SLIDE EDITOR
+       ================================================================ */
+    .editor {
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      flex-wrap: wrap;
+      align-content: flex-start;
+      gap: 24px;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 24px;
+      background: var(--white);
+      overflow: hidden;
+    }
+
+    /* Stacked layout — details wraps below the canvas */
+    .editor.is-stacked {
+      overflow-y: auto;
+      overflow-x: hidden;
+    }
+    .editor.is-stacked .details {
+      flex-shrink: 0; /* prevent flex from overriding JS-set width */
+    }
+
+    /* ================================================================
+       CANVAS
+       @vue-component  SlideCanvas
+       @props          slide: Slide | null
+       @emits          file-selected(File)
+       ================================================================ */
+    .canvas {
+      aspect-ratio: 540 / 675;
+      width: 540px;   /* overridden by JS ResizeObserver */
+      max-width: 540px;
+      min-width: 360px;
+      flex-shrink: 0; /* JS owns sizing */
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-s);
+      position: relative;
+      overflow: hidden;
+      /* Empty state styling */
+      border: 1px dashed var(--slate-300);
+      background: var(--slate-100);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 24px;
+      padding: 24px;
+      transition: border-color var(--t-fast), background-color var(--t-fast);
+    }
+    .canvas.has-image {
+      border-style: solid;
+      border-color: var(--slate-300);
+      background: #000;
+      padding: 0;
+    }
+    .canvas.is-drag-over {
+      border-style: solid;
+      border-color: var(--blue-500);
+      background: rgba(59, 130, 246, 0.05);
+    }
+
+    .canvas__empty {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 24px;
+      width: 100%;
+    }
+    .canvas.has-image .canvas__empty { display: none; }
+
+    .canvas__upload-icon svg { width: 48px; height: 48px; color: var(--slate-400); }
+
+    .canvas__copy {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      text-align: center;
+      color: var(--slate-400);
+    }
+    .canvas__copy h4 {
+      font-size: var(--text-lg);
+      font-weight: 600;
+      line-height: var(--lh-md);
+    }
+    .canvas__copy p {
+      font-size: var(--text-sm);
+      font-weight: 400;
+      line-height: var(--lh-sm);
+    }
+    .canvas__or {
+      font-size: var(--text-md);
+      font-weight: 500;
+      color: var(--slate-400);
+    }
+
+    .canvas__image {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: var(--radius-xl);
+      display: none;
+    }
+    .canvas.has-image .canvas__image { display: block; }
+
+    /* ================================================================
+       DETAILS PANEL
+       @vue-component  SlideDetails
+       @props          slide: Slide | null
+       @emits          file-selected(File), add-tag(String), remove-tag(String)
+       ================================================================ */
+    .details {
+      width: 360px;
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .field-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .field-label {
+      display: block;
+      font-size: var(--text-sm);
+      font-weight: 400;
+      line-height: var(--lh-sm);
+      color: var(--slate-700);
+    }
+
+    /* ================================================================
+       BUTTONS
+       ================================================================ */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 8px 12px;
+      height: 40px;
+      border-radius: var(--radius-lg);
+      border: none;
+      font-size: var(--text-md);
+      font-weight: 400;
+      line-height: var(--lh-md);
+      color: var(--white);
+      white-space: nowrap;
+      transition: background-color var(--t-fast), opacity var(--t-fast);
+    }
+    .btn svg { width: 16px; height: 16px; flex-shrink: 0; }
+
+    .btn--primary                    { background: var(--blue-500); }
+    .btn--primary:hover:not(:disabled) { background: var(--blue-600); }
+
+    .btn--secondary                    { background: var(--slate-600); }
+    .btn--secondary:hover:not(:disabled) { background: var(--slate-700); }
+    .btn--secondary:disabled           { background: var(--slate-300); color: var(--slate-400); opacity: 1; }
+
+    .btn--full    { width: 100%; }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* Stack multiple full-width buttons inside a field-group with a 6 px gap */
+    .field-group .btn--full + .btn--full { margin-top: 6px; }
+
+    /* Bare icon button (e.g. modal close) */
+    .icon-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      padding: 0;
+      background: transparent;
+      border: none;
+      border-radius: var(--radius-md);
+      color: var(--slate-700);
+      cursor: pointer;
+      transition: background-color var(--t-fast), color var(--t-fast);
+    }
+    .icon-btn:hover { background: var(--slate-100); color: var(--slate-700); }
+    .icon-btn svg   { width: 16px; height: 16px; pointer-events: none; }
+
+    /* Create (sidebar) button */
+    .btn-create {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      padding: 8px 12px;
+      height: 40px;
+      border-radius: var(--radius-lg);
+      border: none;
+      font-size: var(--text-md);
+      font-weight: 400;
+      line-height: var(--lh-md);
+      color: var(--white);
+      background: var(--blue-500);
+      transition: background-color var(--t-fast), width var(--t-normal), padding var(--t-normal);
+    }
+    .btn-create:hover     { background: var(--blue-600); }
+    .btn-create svg       { width: 16px; height: 16px; flex-shrink: 0; }
+
+    /* Collapsible label inside btn-create */
+    .btn-label {
+      overflow: hidden;
+      white-space: nowrap;
+      max-width: 200px;
+      opacity: 1;
+      transition: max-width var(--t-normal), opacity var(--t-fast);
+    }
+    .sidebar.is-closed .btn-label {
+      max-width: 0;
+      opacity: 0;
+    }
+
+    /* ================================================================
+       TEXT INPUT
+       ================================================================ */
+    .text-input {
+      width: 100%;
+      height: 40px;
+      background: var(--white);
+      border: 1px solid var(--slate-300);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-s);
+      padding: 8px 12px;
+      font-size: var(--text-md);
+      font-weight: 400;
+      line-height: var(--lh-md);
+      color: var(--slate-700);
+      outline: none;
+      transition: border-color var(--t-fast), box-shadow var(--t-fast);
+    }
+    .text-input::placeholder { color: var(--slate-400); }
+    .text-input:disabled {
+      background: var(--slate-100);
+      border-color: var(--slate-300);
+      color: var(--slate-300);
+      cursor: not-allowed;
+    }
+    .text-input:disabled::placeholder { color: var(--slate-300); }
+    .text-input:focus {
+      border-color: var(--blue-500);
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+    }
+    .text-input.is-invalid {
+      border-color: var(--red-500);
+      box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.12);
+    }
+
+    .field-error {
+      font-size: var(--text-sm);
+      line-height: var(--lh-sm);
+      color: var(--red-500);
+    }
+
+    /* ================================================================
+       TAGS
+       @vue-component  TagList (within SlideDetails)
+       ================================================================ */
+    .tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 6px; /* field-group gap (6px) + this = 12px below input */
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 4px 8px;
+      background: var(--slate-100);
+      border: 1px solid var(--slate-200);
+      border-radius: var(--radius-md);
+      font-size: var(--text-sm);
+      font-weight: 400;
+      line-height: var(--lh-sm);
+      color: var(--slate-700);
+      cursor: default;
+      transition: background-color var(--t-fast), border-color var(--t-fast);
+    }
+    .tag:hover {
+      background: var(--slate-200);
+      border-color: var(--slate-300);
+    }
+
+    /* Link-type chip (added via Instagram URL) */
+    .tag--link {
+      color: var(--blue-500);
+      cursor: pointer;
+    }
+
+    .tag__remove {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: none;
+      border: none;
+      padding: 0;
+      color: var(--slate-400);
+      cursor: pointer;
+      transition: color var(--t-fast);
+    }
+    .tag__remove:hover { color: var(--red-500); }
+    .tag__remove svg   { width: 12px; height: 12px; pointer-events: none; }
+
+    /* ================================================================
+       FOOTER
+       @vue-component  CreatePostFooter
+       @emits          discard, done-editing
+       ================================================================ */
+    .footer {
+      flex-shrink: 0;
+      height: var(--footer-h);
+      background: var(--white);
+      border-top: 1px solid var(--slate-200);
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 12px;
+      padding: 16px 24px;
+      overflow: hidden;
+    }
+
+    /* ================================================================
+       RESPONSIVE — MOBILE  (< 768px  =  Shadcn "md" breakpoint)
+       ================================================================ */
+    @media (max-width: 767px) {
+      .app {
+        padding-right: 0;
+        flex-direction: column;
+      }
+
+      /* Hide desktop sidebar */
+      .sidebar { display: none; }
+
+      .main { padding: 0; }
+
+      .card {
+        border-radius: 0;
+        border: none;
+        box-shadow: none;
+        /* Header + Gallery are fixed; editor scrolls; footer fixed */
+        display: grid;
+        grid-template-rows: auto auto 1fr auto;
+        height: 100vh;
+      }
+
+      /* Header */
+      .header { padding: 8px 16px; }
+
+      /* Gallery — smaller thumbnails */
+      .gallery { padding: 16px; }
+      .gallery__track  { gap: 12px; }
+      .gallery__slides { gap: 12px; }
+
+      .slide-thumb               { width: 64px; height: 80px; }
+      .slide-thumb--empty .slide-thumb__icon svg,
+      .slide-thumb--add   .slide-thumb__icon svg { width: 20px; height: 20px; }
+
+      /* Editor — vertical, scrollable */
+      .editor {
+        flex-direction: column;
+        flex-wrap: nowrap; /* prevent column-direction items from wrapping side-by-side */
+        align-items: center;
+        justify-content: flex-start;
+        gap: 16px;
+        padding: 16px;
+        overflow-y: auto;
+        /* Enable smooth momentum scrolling on iOS */
+        -webkit-overflow-scrolling: touch;
+      }
+
+      /* Canvas — full width */
+      .canvas {
+        width: 100%;
+        max-width: 100%;
+        min-width: unset;
+        min-height: unset;
+        height: auto;
+        max-height: none;
+        flex-shrink: 0;
+      }
+
+      /* Details — full width */
+      .details { width: 100%; flex-shrink: 0; }
+
+      /* Footer — stretch buttons to fill row */
+      .footer {
+        height: auto;
+        padding: 16px;
+        justify-content: stretch;
+      }
+      .footer .btn { flex: 1; }
+    }
+
+    /* ================================================================
+       CROP MODAL
+       @vue-component  CropModal
+       @props          src: String
+       @emits          apply(croppedDataUrl), cancel
+       ================================================================ */
+
+    /* Overlay */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.55);
+      backdrop-filter: blur(3px);
+      -webkit-backdrop-filter: blur(3px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 200;
+      padding: 16px;
+    }
+    .modal-overlay.is-hidden { display: none; }
+
+    /* Modal card */
+    .modal {
+      background: var(--white);
+      border-radius: var(--radius-xl);
+      box-shadow: 0 24px 64px rgba(0, 0, 0, 0.25);
+      width: 640px;
+      max-width: 100%;
+      max-height: calc(100vh - 32px);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* Modal header — matches app header height */
+    .modal__header {
+      flex-shrink: 0;
+      height: var(--header-h);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 24px;
+      border-bottom: 1px solid var(--slate-200);
+      position: relative;
+      z-index: 10;
+    }
+    .modal__title {
+      font-size: var(--text-md);
+      font-weight: 600;
+      line-height: var(--lh-md);
+      color: var(--slate-700);
+    }
+
+    /* Crop area */
+    .modal__body {
+      flex: 1;
+      min-height: 0;
+      background: var(--slate-700);
+      position: relative;
+      overflow: hidden;
+    }
+    .crop-image-el {
+      display: block;
+      max-width: 100%;
+      /* Cropper.js takes over sizing */
+    }
+
+    /* Cropper.js overrides — style to match design system */
+    .cropper-view-box,
+    .cropper-face { border-radius: 0; }
+
+    .cropper-line,
+    .cropper-point { background-color: var(--blue-500); }
+
+    .cropper-point { width: 8px; height: 8px; opacity: 1; border-radius: 2px; }
+
+    .cropper-dashed { border-color: rgba(255,255,255,0.4); }
+
+    /* Modal footer — matches app footer height */
+    .modal__footer {
+      flex-shrink: 0;
+      height: var(--footer-h);
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 12px;
+      padding: 16px 24px;
+      border-top: 1px solid var(--slate-200);
+      position: relative;
+      z-index: 10;
+    }
+
+    @media (max-width: 767px) {
+      .modal { max-height: 100%; border-radius: 0; width: 100%; }
+      .modal-overlay { padding: 0; }
+      .modal__footer .btn { flex: 1; }
+    }
+
+    /* ================================================================
+       IMAGE EDITOR OVERLAY — Filerobot Image Editor
+       ================================================================ */
+    .fie-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(3px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 300;
+      padding: 24px;
+    }
+    .fie-overlay.is-hidden { display: none; }
+
+    #fie-container {
+      width:  min(1200px, calc(100vw - 48px));
+      height: min(800px,  calc(100vh - 48px));
+      border-radius: var(--radius-xl);
+      overflow: hidden;
+      box-shadow: 0 24px 64px rgba(0, 0, 0, 0.4);
+    }
+  </style>
+</head>
+
+<body>
+  <div id="app" class="app">
+
+    <!-- ==============================================================
+         SIDEBAR
+         @vue-component: AppSidebar
+         @props:  open (Boolean)
+         @emits:  toggle
+         ============================================================== -->
+    <aside id="sidebar" class="sidebar" aria-label="Navigation sidebar">
+
+      <!-- Logo -->
+      <div class="sidebar-logo">
+        <!--
+          Vue/Laravel: replace src with a proper asset path
+          e.g. <img :src="asset('images/tatler-logo-full.png')" />
+          Visibility is controlled by the wrapper divs, not the imgs,
+          so onerror fallbacks cannot accidentally break show/hide logic.
+        -->
+        <div class="sidebar-logo__full">
+          <img
+            src="assets/tatler-logo-full.png"
+            alt="Tatler" width="57" height="32"
+            onerror="this.replaceWith(Object.assign(document.createElement('span'),{textContent:'Tatler',style:'font-family:Georgia,serif;font-style:italic;font-size:22px;font-weight:700;color:#334155'}))"
+          />
+        </div>
+        <div class="sidebar-logo__icon">
+          <img
+            src="assets/tatler-logo-icon.png"
+            alt="Tatler" width="32" height="32"
+            onerror="this.replaceWith(Object.assign(document.createElement('span'),{textContent:'T',style:'font-family:Georgia,serif;font-style:italic;font-size:22px;font-weight:700;color:#334155'}))"
+          />
+        </div>
+      </div>
+
+      <!-- Create button -->
+      <div class="sidebar-create">
+        <button class="btn-create" id="create-btn" aria-label="Create new post">
+          <i data-lucide="plus"></i>
+          <span class="btn-label">Create</span>
+        </button>
+      </div>
+
+      <!-- Navigation
+           @vue: Use <RouterLink> with active-class="is-active"
+           @laravel: Highlight based on Route::currentRouteName() -->
+      <nav class="sidebar-nav" aria-label="Main navigation">
+        <button class="nav-item" data-route="drafts">
+          <span class="nav-item__icon"><i data-lucide="square-pen"></i></span>
+          <span class="nav-item__label">Drafts</span>
+        </button>
+        <button class="nav-item" data-route="scheduled">
+          <span class="nav-item__icon"><i data-lucide="calendar"></i></span>
+          <span class="nav-item__label">Scheduled</span>
+        </button>
+        <button class="nav-item" data-route="published">
+          <span class="nav-item__icon"><i data-lucide="square-check-big"></i></span>
+          <span class="nav-item__label">Published</span>
+        </button>
+        <button class="nav-item" data-route="templates">
+          <span class="nav-item__icon"><i data-lucide="panels-top-left"></i></span>
+          <span class="nav-item__label">Templates</span>
+        </button>
+        <button class="nav-item" data-route="settings">
+          <span class="nav-item__icon"><i data-lucide="settings"></i></span>
+          <span class="nav-item__label">Settings</span>
+        </button>
+        <button class="nav-item" data-route="logout">
+          <span class="nav-item__icon"><i data-lucide="log-out"></i></span>
+          <span class="nav-item__label">Logout</span>
+        </button>
+      </nav>
+
+    </aside><!-- /sidebar -->
+
+    <!-- ==============================================================
+         MAIN
+         ============================================================== -->
+    <main class="main">
+      <div class="card">
+
+        <!-- ============================================================
+             HEADER
+             @vue-component: CreatePostHeader
+             ============================================================ -->
+        <header class="header">
+
+          <!-- Toggle sidebar -->
+          <button
+            id="sidebar-toggle"
+            class="sidebar-toggle"
+            aria-label="Toggle navigation sidebar"
+            aria-expanded="true"
+          >
+            <i data-lucide="panel-left"></i>
+          </button>
+
+          <!-- Breadcrumb -->
+          <nav class="breadcrumb" aria-label="Breadcrumb">
+            <span class="breadcrumb__section">Create post</span>
+            <span class="breadcrumb__sep" aria-hidden="true">
+              <i data-lucide="chevron-right"></i>
+            </span>
+            <div class="breadcrumb__title">
+              <!-- Display mode; click to edit -->
+              <span
+                id="post-title-display"
+                class="title-display"
+                role="button"
+                tabindex="0"
+                title="Click to rename"
+                aria-label="Post title — click to edit"
+              >Untitled post</span>
+
+              <!-- Edit mode (hidden until triggered) -->
+              <input
+                id="post-title-input"
+                class="title-input is-hidden"
+                type="text"
+                value="Untitled post"
+                aria-label="Post title"
+                maxlength="120"
+              />
+
+              <!-- Pen icon -->
+              <button
+                id="edit-title-btn"
+                class="edit-title-btn"
+                aria-label="Edit post title"
+              >
+                <i data-lucide="pen"></i>
+              </button>
+            </div>
+          </nav>
+
+        </header><!-- /header -->
+
+        <!-- ============================================================
+             SLIDE GALLERY
+             @vue-component: SlideGallery
+             ============================================================ -->
+        <section class="gallery" aria-label="Slide gallery">
+          <div class="gallery__track">
+
+            <!-- Sortable slides (populated by JS) -->
+            <div
+              id="gallery-slides"
+              class="gallery__slides"
+              role="list"
+              aria-label="Slides"
+            ></div>
+
+            <!-- Add-slide button — always last, excluded from sort -->
+            <div
+              id="add-slide-btn"
+              class="slide-thumb slide-thumb--add"
+              role="button"
+              tabindex="0"
+              aria-label="Add new slide"
+            >
+              <span class="slide-thumb__icon"><i data-lucide="circle-plus"></i></span>
+            </div>
+
+          </div>
+        </section><!-- /gallery -->
+
+        <!-- ============================================================
+             SLIDE EDITOR
+             ============================================================ -->
+        <section class="editor" id="slide-editor">
+
+          <!-- CANVAS
+               @vue-component: SlideCanvas
+               ============================================================ -->
+          <div
+            class="canvas"
+            id="slide-canvas"
+            role="region"
+            aria-label="Slide canvas"
+          >
+            <!-- Empty / drag-drop state -->
+            <div class="canvas__empty">
+              <span class="canvas__upload-icon" aria-hidden="true">
+                <i data-lucide="upload"></i>
+              </span>
+              <div class="canvas__copy">
+                <h4>Drag and drop file here</h4>
+                <p>jpg, png, gif, svg, webp, heic (max. 50MB)</p>
+              </div>
+              <span class="canvas__or" aria-hidden="true">OR</span>
+              <button class="btn btn--primary" id="canvas-browse-btn">
+                <i data-lucide="image"></i>
+                Browse
+              </button>
+            </div>
+
+            <!-- Image preview (shown when slide has src) -->
+            <img
+              id="canvas-image"
+              class="canvas__image"
+              src=""
+              alt="Current slide content"
+            />
+          </div><!-- /canvas -->
+
+          <!-- DETAILS PANEL
+               @vue-component: SlideDetails
+               ============================================================ -->
+          <div class="details" id="slide-details">
+
+            <!-- Image / Video -->
+            <div class="field-group">
+              <label class="field-label">Image / video</label>
+              <button class="btn btn--primary btn--full" id="details-browse-btn">
+                <i data-lucide="image"></i>
+                Browse
+              </button>
+            </div>
+
+            <!-- Edit tools (non-interactive in prototype) -->
+            <div class="field-group">
+              <label class="field-label">Edit</label>
+              <button
+                id="image-editor-btn"
+                class="btn btn--secondary btn--full"
+                disabled
+              >
+                <i data-lucide="palette"></i>
+                Image editor
+              </button>
+              <button
+                id="ai-editor-btn"
+                class="btn btn--secondary btn--full"
+                disabled
+              >
+                <i data-lucide="wand-sparkles"></i>
+                AI editor
+              </button>
+            </div>
+
+            <!-- Tag users
+                 @vue: v-model on input, @keydown.enter="addTag"
+                 @laravel: PATCH /api/slides/:id  { tags: [...] } -->
+            <div class="field-group">
+              <label class="field-label" for="tag-input">Tag users</label>
+              <input
+                type="text"
+                id="tag-input"
+                class="text-input"
+                placeholder="Paste Instagram profile link"
+                autocomplete="off"
+                spellcheck="false"
+                aria-describedby="tag-input-error"
+                disabled
+              />
+              <p id="tag-input-error" class="field-error" role="alert" aria-live="polite" hidden></p>
+              <!-- Tag chips (populated by JS) -->
+              <div
+                id="tags-list"
+                class="tags"
+                role="list"
+                aria-label="Tagged users"
+              ></div>
+            </div>
+
+          </div><!-- /details -->
+
+        </section><!-- /editor -->
+
+        <!-- ============================================================
+             FOOTER
+             @vue-component: CreatePostFooter
+             @emits: discard, done-editing
+             @laravel:
+               discard     → DELETE /api/posts/:id
+               done-editing → PATCH  /api/posts/:id  { status: 'draft' }
+             ============================================================ -->
+        <footer class="footer">
+          <button class="btn btn--secondary" id="discard-btn">
+            <i data-lucide="trash"></i>
+            Discard
+          </button>
+          <button class="btn btn--primary" id="done-btn">
+            <i data-lucide="check"></i>
+            Done editing
+          </button>
+        </footer><!-- /footer -->
+
+      </div><!-- /card -->
+    </main><!-- /main -->
+
+    <!-- ==============================================================
+         CROP MODAL
+         @vue-component: CropModal
+         ============================================================== -->
+    <div id="crop-modal" class="modal-overlay is-hidden" role="dialog" aria-modal="true" aria-labelledby="crop-modal-title">
+      <div class="modal">
+
+        <!-- Header -->
+        <div class="modal__header">
+          <h2 class="modal__title" id="crop-modal-title">Crop image</h2>
+          <button class="icon-btn" id="crop-close-btn" aria-label="Cancel crop">
+            <i data-lucide="x"></i>
+          </button>
+        </div>
+
+        <!-- Crop area (Cropper.js mounts here) -->
+        <div class="modal__body">
+          <img id="crop-image-el" class="crop-image-el" src="" alt="Image to crop" />
+        </div>
+
+        <!-- Footer -->
+        <div class="modal__footer">
+          <button class="btn btn--secondary" id="crop-cancel-btn">
+            Cancel
+          </button>
+          <button class="btn btn--primary" id="crop-apply-btn">
+            <i data-lucide="crop"></i>
+            Crop &amp; apply
+          </button>
+        </div>
+
+      </div>
+    </div><!-- /crop-modal -->
+
+    <!-- ============================================================
+         IMAGE EDITOR MODAL — Filerobot Image Editor
+         @vue-component: ImageEditorModal
+         ============================================================ -->
+    <div
+      id="image-editor-modal"
+      class="fie-overlay is-hidden"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Image editor"
+    >
+      <div id="fie-container"></div>
+    </div><!-- /image-editor-modal -->
+
+    <!-- Shared hidden file input -->
+    <input
+      type="file"
+      id="file-input"
+      accept="image/jpeg,image/png,image/gif,image/svg+xml,image/webp,image/heic,image/heif"
+      aria-hidden="true"
+      style="display:none"
+    />
+
+  </div><!-- /app -->
+
+  <!-- ==============================================================
+       JAVASCRIPT
+       Vue/Laravel migration notes inline throughout
+       ============================================================== -->
+  <script>
+    /* ================================================================
+       STATE
+       @vue:    Replace with reactive() / ref() from Vue 3
+                or a Pinia store  (stores/post.ts)
+       @laravel: Seed initial data from GET /api/posts/:id
+       ================================================================ */
+
+    /*
+     * Slide shape:
+     *   id:   number      — unique identifier (Laravel: Slide model PK)
+     *   src:  string|null — JPEG data URL after crop/edit (prototype) / CDN URL (production)
+     *   tags: { handle: string, isLink: boolean }[]  — Instagram handles
+     */
+    const INITIAL_SLIDES = [
+      {
+        id: 1,
+        src: null,  // single empty slide, selected by default
+        tags: [],
+      },
+    ];
+
+    const state = {
+      sidebarOpen:     true,
+      postTitle:       'Untitled post',
+      isTitleEditing:  false,
+      slides:          INITIAL_SLIDES.map(s => ({ ...s, tags: [...s.tags] })),
+      selectedSlideId: 1,
+      nextSlideId:     2,
+    };
+
+    /* ================================================================
+       LOCAL STORAGE PERSISTENCE
+       Saves the full draft state on every meaningful mutation so a page
+       refresh doesn't lose work.  Images are stored as JPEG data URLs
+       (produced by Cropper.js / Filerobot) — each is ~100–300 KB after
+       compression, so a typical 10-slide post stays well under the 5 MB
+       localStorage quota.  Production should upload images to a server
+       and store CDN URLs instead.
+       ================================================================ */
+    const STORAGE_KEY = 'tatler-cms-draft';
+
+    function persistState() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({
+          postTitle:       state.postTitle,
+          slides:          state.slides,
+          selectedSlideId: state.selectedSlideId,
+          nextSlideId:     state.nextSlideId,
+          sidebarOpen:     state.sidebarOpen,
+        }));
+      } catch (e) {
+        // Quota exceeded — silently skip; the UI remains functional.
+        console.warn('Draft could not be saved to localStorage:', e.message);
+      }
+    }
+
+    function loadPersistedState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return;
+        const saved = JSON.parse(raw);
+        if (saved && Array.isArray(saved.slides) && saved.slides.length > 0) {
+          state.postTitle       = saved.postTitle       ?? state.postTitle;
+          state.slides          = saved.slides;
+          state.selectedSlideId = saved.selectedSlideId ?? saved.slides[0].id;
+          state.nextSlideId     = saved.nextSlideId     ?? saved.slides.length + 1;
+          state.sidebarOpen     = saved.sidebarOpen     ?? state.sidebarOpen;
+        }
+      } catch (e) {
+        // Corrupted data — clear and start fresh.
+        localStorage.removeItem(STORAGE_KEY);
+      }
+    }
+
+    function clearPersistedState() {
+      localStorage.removeItem(STORAGE_KEY);
+    }
+
+    /* ================================================================
+       DOM REFS
+       @vue: Use template refs  ref="elName"  or  useTemplateRef()
+       ================================================================ */
+    const $ = id => document.getElementById(id);
+
+    const elApp            = $('app');
+    const elSidebar        = $('sidebar');
+    const elSidebarToggle  = $('sidebar-toggle');
+    const elGallerySlides  = $('gallery-slides');
+    const elAddSlideBtn    = $('add-slide-btn');
+    const elSlideEditor    = $('slide-editor');
+    const elSlideCanvas    = $('slide-canvas');
+    const elSlideDetails   = $('slide-details');
+    const elCanvasImage    = $('canvas-image');
+    const elTitleDisplay   = $('post-title-display');
+    const elTitleInput     = $('post-title-input');
+    const elEditTitleBtn   = $('edit-title-btn');
+    const elCanvasBrowse   = $('canvas-browse-btn');
+    const elDetailsBrowse  = $('details-browse-btn');
+    const elImageEditorBtn    = $('image-editor-btn');
+    const elAiEditorBtn       = $('ai-editor-btn');
+    const elImageEditorModal  = $('image-editor-modal');
+    const elFieContainer      = $('fie-container');
+    const elTagInput       = $('tag-input');
+    const elTagInputError  = $('tag-input-error');
+    const elTagsList       = $('tags-list');
+    const elFileInput      = $('file-input');
+    const elDiscardBtn     = $('discard-btn');
+    const elDoneBtn        = $('done-btn');
+
+    /* ================================================================
+       CANVAS RESIZE — maintain 4:5 aspect ratio within available space
+       Observes the editor container and picks the largest canvas width
+       that fits both horizontally (editor width − details − gaps − padding)
+       and vertically (editor height − padding), clamped to 360–540 px.
+       When horizontal space drops below the stacked threshold the details
+       panel wraps below the canvas (.is-stacked) and the full editor
+       width minus padding is used instead.
+       ================================================================ */
+    const CANVAS_RATIO     = 540 / 675; // 4:5
+    const CANVAS_MAX       = 540;
+    const CANVAS_MIN       = 360;
+    const EDITOR_PAD       = 24;  // editor padding (each side)
+    const DETAILS_W        = 360; // .details fixed width
+    const EDITOR_GAP       = 24;  // gap between canvas and details
+    // Width at which canvas + gap + details no longer fit side by side
+    const STACK_THRESHOLD  = EDITOR_PAD * 2 + CANVAS_MIN + EDITOR_GAP + DETAILS_W; // 792 px
+
+    function resizeCanvas() {
+      const editorW  = elSlideEditor.clientWidth;
+      const editorH  = elSlideEditor.clientHeight;
+      const stacked  = editorW < STACK_THRESHOLD;
+
+      elSlideEditor.classList.toggle('is-stacked', stacked);
+
+      let finalW;
+      if (stacked) {
+        // Details is below — canvas fills available editor width.
+        // Read actual padding so mobile (16 px) and desktop (24 px) are both handled correctly.
+        const pad    = parseFloat(window.getComputedStyle(elSlideEditor).paddingLeft);
+        const availW = editorW - pad * 2;
+        // Enforce CANVAS_MIN only on desktop (full 24 px padding); on mobile let canvas shrink freely.
+        finalW = Math.min(CANVAS_MAX, pad >= EDITOR_PAD ? Math.max(CANVAS_MIN, availW) : availW);
+      } else {
+        // Details is to the right — constrain by both horizontal and vertical space
+        const availW   = editorW - EDITOR_PAD * 2 - EDITOR_GAP - DETAILS_W;
+        const availH   = editorH - EDITOR_PAD * 2;
+        const maxFromH = availH * CANVAS_RATIO;
+        finalW = Math.max(CANVAS_MIN, Math.min(CANVAS_MAX, availW, maxFromH));
+      }
+
+      elSlideCanvas.style.width  = finalW + 'px';
+      // In stacked mode match details width to canvas; restore fixed width otherwise
+      elSlideDetails.style.width = stacked ? finalW + 'px' : '';
+    }
+
+    new ResizeObserver(resizeCanvas).observe(elSlideEditor);
+    resizeCanvas(); // run once on load
+
+    /* ================================================================
+       SIDEBAR TOGGLE
+       @vue: AppSidebar — emit 'toggle', parent updates :open prop
+       ================================================================ */
+    elSidebarToggle.addEventListener('click', () => {
+      state.sidebarOpen = !state.sidebarOpen;
+      syncSidebar();
+      persistState();
+    });
+
+    function syncSidebar() {
+      elSidebar.classList.toggle('is-closed', !state.sidebarOpen);
+      elSidebarToggle.setAttribute('aria-expanded', String(state.sidebarOpen));
+    }
+
+    /* ================================================================
+       POST TITLE — INLINE EDIT
+       @vue: v-if on span vs input, @blur/@keydown.enter → commit
+       ================================================================ */
+    function beginTitleEdit() {
+      if (state.isTitleEditing) return;
+      state.isTitleEditing = true;
+      elTitleInput.value = state.postTitle;
+      elTitleDisplay.classList.add('is-hidden');
+      elTitleInput.classList.remove('is-hidden');
+      elTitleInput.focus();
+      elTitleInput.select();
+    }
+
+    function commitTitleEdit() {
+      if (!state.isTitleEditing) return;
+      const val = elTitleInput.value.trim();
+      state.postTitle = val || 'Untitled post';
+      state.isTitleEditing = false;
+      elTitleDisplay.textContent = state.postTitle;
+      elTitleDisplay.classList.remove('is-hidden');
+      elTitleInput.classList.add('is-hidden');
+      persistState();
+    }
+
+    function cancelTitleEdit() {
+      state.isTitleEditing = false;
+      elTitleDisplay.classList.remove('is-hidden');
+      elTitleInput.classList.add('is-hidden');
+    }
+
+    elEditTitleBtn.addEventListener('click', beginTitleEdit);
+    elTitleDisplay.addEventListener('click', beginTitleEdit);
+    elTitleDisplay.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') beginTitleEdit();
+    });
+    elTitleInput.addEventListener('blur',    commitTitleEdit);
+    elTitleInput.addEventListener('keydown', e => {
+      if (e.key === 'Enter')  { e.preventDefault(); commitTitleEdit(); }
+      if (e.key === 'Escape') cancelTitleEdit();
+    });
+
+    /* ================================================================
+       SLIDE GALLERY — RENDER
+       @vue: <SlideThumb v-for="slide in slides" :key="slide.id"
+                         :selected="slide.id === selectedId"
+                         @click="selectSlide(slide.id)"
+                         @delete="deleteSlide(slide.id)" />
+       ================================================================ */
+    function renderGallery() {
+      elGallerySlides.innerHTML = '';
+
+      state.slides.forEach(slide => {
+        elGallerySlides.appendChild(buildThumb(slide));
+      });
+
+      lucide.createIcons({ nodes: [elGallerySlides] });
+
+      // Rebuild Sortable after every DOM rebuild — innerHTML wipe detaches it.
+      initSortable();
+    }
+
+    function buildThumb(slide) {
+      const el = document.createElement('div');
+      el.className = 'slide-thumb';
+      el.setAttribute('data-id', slide.id);
+      el.setAttribute('role', 'listitem');
+      el.setAttribute('tabindex', '0');
+      el.setAttribute('aria-label', `Slide ${slide.id}${slide.src ? '' : ' (empty)'}`);
+
+      if (slide.src) {
+        el.classList.add('slide-thumb--filled');
+        const img = document.createElement('img');
+        img.className = 'slide-thumb__img';
+        img.src = slide.src;
+        img.alt = '';
+        el.appendChild(img);
+      } else {
+        el.classList.add('slide-thumb--empty');
+        const icon = document.createElement('span');
+        icon.className = 'slide-thumb__icon';
+        icon.innerHTML = '<i data-lucide="image"></i>';
+        el.appendChild(icon);
+      }
+
+      if (state.selectedSlideId === slide.id) {
+        el.classList.add('is-selected');
+        // Only show delete button when there is more than one slide
+        if (state.slides.length > 1) {
+          el.appendChild(buildDeleteBtn(slide.id));
+        }
+      }
+
+      el.addEventListener('click', () => selectSlide(slide.id));
+      el.addEventListener('keydown', e => {
+        if (e.key === 'Enter' || e.key === ' ') selectSlide(slide.id);
+      });
+
+      return el;
+    }
+
+    function buildDeleteBtn(slideId) {
+      const btn = document.createElement('button');
+      btn.className = 'slide-thumb__delete';
+      btn.setAttribute('aria-label', 'Delete slide');
+      btn.innerHTML = '<i data-lucide="x"></i>';
+      btn.addEventListener('click', e => {
+        e.stopPropagation();
+        deleteSlide(slideId);
+      });
+      return btn;
+    }
+
+    /* ================================================================
+       SLIDE OPERATIONS
+       @vue:    Emit select-slide / add-slide / delete-slide
+       @laravel:
+         ADD    → POST   /api/posts/:id/slides
+         DELETE → DELETE /api/slides/:id
+       ================================================================ */
+    function selectSlide(id) {
+      state.selectedSlideId = id;
+      renderGallery();  // also calls initSortable
+      syncCanvas();
+      renderTags();
+    }
+
+    function addSlide() {
+      const slide = { id: state.nextSlideId++, src: null, tags: [] };
+      state.slides.push(slide);
+      selectSlide(slide.id);
+      persistState();
+    }
+
+    function deleteSlide(id) {
+      const idx = state.slides.findIndex(s => s.id === id);
+      if (idx === -1) return;
+      state.slides.splice(idx, 1);
+
+      // Select an adjacent slide
+      if (state.slides.length > 0) {
+        state.selectedSlideId = state.slides[Math.min(idx, state.slides.length - 1)].id;
+      } else {
+        state.selectedSlideId = null;
+      }
+
+      renderGallery();  // also calls initSortable
+      syncCanvas();
+      renderTags();
+      persistState();
+    }
+
+    /* ================================================================
+       CANVAS SYNC
+       @vue: Computed property currentSlide drives :src and v-if
+       ================================================================ */
+    function syncCanvas() {
+      const slide = state.slides.find(s => s.id === state.selectedSlideId);
+      const hasImage = !!(slide && slide.src);
+
+      if (hasImage) {
+        elCanvasImage.src = slide.src;
+        elSlideCanvas.classList.add('has-image');
+      } else {
+        elCanvasImage.src = '';
+        elSlideCanvas.classList.remove('has-image');
+      }
+
+      elImageEditorBtn.disabled = !hasImage;
+      elAiEditorBtn.disabled    = !hasImage;
+
+      elTagInput.disabled = !hasImage;
+      if (!hasImage) clearTagError();
+    }
+
+    /* ================================================================
+       FILE UPLOAD
+       @vue:    <input ref="fileInput" type="file" @change="onFileChange">
+       @laravel: POST /api/slides/:id/media  (multipart/form-data)
+                 Returns: { url: '...' }  → update slide.src
+       ================================================================ */
+    elCanvasBrowse.addEventListener('click',   () => elFileInput.click());
+    elDetailsBrowse.addEventListener('click',  () => elFileInput.click());
+
+    elFileInput.addEventListener('change', e => {
+      const file = e.target.files[0];
+      if (file) processFile(file);
+      elFileInput.value = '';   // allow re-selecting the same file
+    });
+
+    /* ================================================================
+       IMAGE EDITOR MODAL — Filerobot Image Editor
+       @vue-component: ImageEditorModal
+       @laravel: the saved base64 can be uploaded via POST /api/slides/:id/media
+       ================================================================ */
+    let fie = null; // FilerobotImageEditor instance
+
+    function openImageEditor() {
+      const slide = state.slides.find(s => s.id === state.selectedSlideId);
+      if (!slide || !slide.src) return;
+
+      elImageEditorModal.classList.remove('is-hidden');
+
+      // Destroy any previous instance before creating a new one
+      if (fie) { fie.terminate(); fie = null; }
+
+      const { TABS, TOOLS } = window.FilerobotImageEditor;
+
+      fie = new window.FilerobotImageEditor(elFieContainer, {
+        source: slide.src,
+
+        // Persist the edited image back to the slide
+        onSave(imageData) {
+          slide.src = imageData.imageBase64;
+          closeImageEditor();
+          renderGallery();  // also calls initSortable
+          syncCanvas();
+          persistState();
+        },
+
+        // Close button inside the editor
+        onClose() {
+          closeImageEditor();
+        },
+
+        tabsIds: [
+          TABS.ADJUST,
+          TABS.FINETUNE,
+          TABS.FILTERS,
+          TABS.ANNOTATE,
+          TABS.WATERMARK,
+          TABS.RESIZE,
+        ],
+        defaultTabId:  TABS.ADJUST,
+        defaultToolId: TOOLS.CROP,
+
+        // Match crop default to 4:5 slide ratio
+        Crop: {
+          presetsItems: [
+            { titleKey: '4:5 (Slide)', ratio: 4 / 5 },
+            { titleKey: '1:1',         ratio: 1 },
+            { titleKey: '4:3',         ratio: 4 / 3 },
+            { titleKey: '16:9',        ratio: 16 / 9 },
+          ],
+          autoResize: true,
+        },
+
+        savingPixelRatio:  window.devicePixelRatio || 1,
+        previewPixelRatio: window.devicePixelRatio || 1,
+
+        // Skip the "Save as…" dialog — go straight to onSave callback
+        onBeforeSave: () => false,
+        defaultSavedImageName: 'slide',
+        defaultSavedImageType: 'jpeg',
+
+        // Theme — mapped from the app's design tokens
+        theme: {
+          palette: {
+            'bg-primary':             '#ffffff',               // --white
+            'bg-secondary':           '#f1f5f9',               // --slate-100
+            'bg-primary-active':      'rgba(59,130,246,0.08)', // blue-500 tint for active states
+            'accent-primary':         '#3b82f6',               // --blue-500
+            'accent-primary-active':  '#2563eb',               // --blue-600
+            'accent-primary-hover':   '#2563eb',               // --blue-600 (hover)
+            // accent-stateless drives the primary button background in @scaleflex/ui
+            'accent-stateless':       '#3b82f6',               // --blue-500
+            'icons-primary':          '#334155',               // --slate-700
+            'icons-secondary':        '#94a3b8',               // --slate-400
+            'borders-primary':        '#cbd5e1',               // --slate-300
+            'borders-secondary':      '#e2e8f0',               // --slate-200
+            'borders-strong':         '#475569',               // --slate-600
+            'light-shadow':           'rgba(0,0,0,0.05)',      // --shadow-s alpha
+            'warning':                '#ef4444',               // --red-500
+          },
+          typography: {
+            fontFamily: "'Geist', Arial, sans-serif", // already loaded by the page
+          },
+        },
+      });
+
+      fie.render();
+    }
+
+    function closeImageEditor() {
+      elImageEditorModal.classList.add('is-hidden');
+      if (fie) { fie.terminate(); fie = null; }
+      // Clear the container so no stale DOM is left
+      elFieContainer.innerHTML = '';
+    }
+
+    elImageEditorBtn.addEventListener('click', openImageEditor);
+
+    // Placeholder — production: open AI image editing workflow
+    elAiEditorBtn.addEventListener('click', () => {
+      alert('AI editor coming soon.');
+    });
+
+    // Close overlay on backdrop click
+    elImageEditorModal.addEventListener('click', e => {
+      if (e.target === elImageEditorModal) closeImageEditor();
+    });
+
+    /* ================================================================
+       CROP MODAL
+       @vue-component: CropModal
+       @vue: Use vue-cropperjs or cropperjs directly inside a <dialog>
+       ================================================================ */
+    let cropper = null;
+
+    const elCropModal    = $('crop-modal');
+    const elCropImageEl  = $('crop-image-el');
+    const elCropApplyBtn = $('crop-apply-btn');
+    const elCropCancelBtn = $('crop-cancel-btn');
+    const elCropCloseBtn  = $('crop-close-btn');
+
+    const MAX_FILE_BYTES  = 50 * 1024 * 1024; // 50 MB — matches the UI copy
+    const ALLOWED_TYPES   = new Set([
+      'image/jpeg', 'image/png', 'image/gif', 'image/svg+xml',
+      'image/webp', 'image/heic', 'image/heif',
+    ]);
+
+    function processFile(file) {
+      if (file.size > MAX_FILE_BYTES) {
+        alert(`File is too large (${(file.size / 1024 / 1024).toFixed(1)} MB). Maximum is 50 MB.`);
+        return;
+      }
+      if (!ALLOWED_TYPES.has(file.type)) {
+        alert(`Unsupported file type "${file.type}". Please select a JPEG, PNG, GIF, SVG, WebP, or HEIC image.`);
+        return;
+      }
+      // createObjectURL is immediate and avoids a 33 % Base64 overhead during
+      // the crop step.  The URL is revoked in closeCropModal once we're done.
+      openCropModal(URL.createObjectURL(file));
+    }
+
+    function openCropModal(src) {
+      elCropImageEl.src = src;
+      elCropModal.classList.remove('is-hidden');
+
+      // Re-init Lucide for the modal's crop icon
+      lucide.createIcons({ nodes: [elCropModal] });
+
+      // Destroy any existing cropper instance
+      if (cropper) { cropper.destroy(); cropper = null; }
+
+      // Init Cropper.js once the image has loaded into the DOM
+      elCropImageEl.onload = () => {
+        cropper = new Cropper(elCropImageEl, {
+          aspectRatio: 4 / 5,        // locked to 4:5 (same as slide canvas)
+          viewMode: 1,               // crop box stays within canvas
+          dragMode: 'move',          // drag to pan image
+          autoCropArea: 0.95,        // start near-full-size
+          restore: false,
+          guides: true,
+          center: true,
+          highlight: false,
+          cropBoxMovable: true,
+          cropBoxResizable: true,
+          toggleDragModeOnDblclick: false,
+          background: false,
+        });
+      };
+    }
+
+    function closeCropModal() {
+      elCropModal.classList.add('is-hidden');
+      if (cropper) { cropper.destroy(); cropper = null; }
+      // Revoke the object URL created in processFile to free browser memory.
+      if (elCropImageEl.src.startsWith('blob:')) URL.revokeObjectURL(elCropImageEl.src);
+      elCropImageEl.src = '';
+    }
+
+    function applyCrop() {
+      if (!cropper) return;
+
+      // Export at 540×675 (the slide canvas resolution)
+      const canvas = cropper.getCroppedCanvas({
+        width: 540,
+        height: 675,
+        imageSmoothingEnabled: true,
+        imageSmoothingQuality: 'high',
+      });
+
+      const src = canvas.toDataURL('image/jpeg', 0.92);
+
+      // Commit to state
+      let slide = state.slides.find(s => s.id === state.selectedSlideId);
+      if (!slide) {
+        slide = { id: state.nextSlideId++, src, tags: [] };
+        state.slides.push(slide);
+        state.selectedSlideId = slide.id;
+      } else {
+        slide.src = src;
+      }
+
+      closeCropModal();
+      renderGallery();  // also calls initSortable
+      syncCanvas();
+      persistState();
+    }
+
+    elCropApplyBtn.addEventListener('click', applyCrop);
+    elCropCancelBtn.addEventListener('click', closeCropModal);
+    elCropCloseBtn.addEventListener('click', closeCropModal);
+
+    // Close on backdrop click
+    elCropModal.addEventListener('click', e => {
+      if (e.target === elCropModal) closeCropModal();
+    });
+
+    // Close the front-most modal on Escape
+    document.addEventListener('keydown', e => {
+      if (e.key !== 'Escape') return;
+      if (!elImageEditorModal.classList.contains('is-hidden')) {
+        closeImageEditor();
+      } else if (!elCropModal.classList.contains('is-hidden')) {
+        closeCropModal();
+      }
+    });
+
+    /* Drag-and-drop onto the canvas */
+    elSlideCanvas.addEventListener('dragover', e => {
+      e.preventDefault();
+      elSlideCanvas.classList.add('is-drag-over');
+    });
+
+    elSlideCanvas.addEventListener('dragleave', e => {
+      // Ignore internal child movements
+      if (!elSlideCanvas.contains(e.relatedTarget)) {
+        elSlideCanvas.classList.remove('is-drag-over');
+      }
+    });
+
+    elSlideCanvas.addEventListener('drop', e => {
+      e.preventDefault();
+      elSlideCanvas.classList.remove('is-drag-over');
+      const file = e.dataTransfer.files[0];
+      // processFile validates type/size — safe to pass directly.
+      if (file) processFile(file);
+    });
+
+    /* ================================================================
+       TAGS
+       @vue:    @keydown.enter on input, v-for on tags
+       @laravel: PATCH /api/slides/:id  { tags: ['handle1', ...] }
+       ================================================================ */
+    elTagInput.addEventListener('keydown', e => {
+      if (e.key !== 'Enter') return;
+      e.preventDefault();
+      const raw = elTagInput.value.trim();
+      if (!raw) return;
+
+      const result = parseHandle(raw);
+
+      if (!result) return; // empty after stripping
+
+      if (result.error) {
+        showTagError('Invalid Instagram profile link');
+        return;
+      }
+
+      clearTagError();
+
+      const slide = state.slides.find(s => s.id === state.selectedSlideId);
+      if (!slide) return;
+      if (slide.tags.some(t => t.handle === result.handle)) { elTagInput.value = ''; return; }
+
+      slide.tags.push(result);
+      elTagInput.value = '';
+      renderTags();
+      persistState();
+    });
+
+    // Clear error as soon as the user starts correcting their input
+    elTagInput.addEventListener('input', clearTagError);
+
+    /* Accept full Instagram URL or @handle or bare handle.
+       Returns { handle, isLink } — isLink true when pasted as a URL.
+       Returns { error: true } when input looks like a URL but isn't a valid Instagram profile link. */
+    function parseHandle(input) {
+      const urlMatch = input.match(/instagram\.com\/([a-zA-Z0-9._]+)\/?$/);
+      if (urlMatch) return { handle: urlMatch[1], isLink: true };
+
+      // If it looks like a URL (http/https or contains a dot+slash pattern) but didn't match → invalid
+      if (/https?:\/\/|www\.|[a-z0-9-]+\.[a-z]{2,}/i.test(input)) {
+        return { error: true };
+      }
+
+      const handle = input.replace(/^@/, '').trim();
+      return handle ? { handle, isLink: false } : null;
+    }
+
+    function showTagError(msg) {
+      elTagInput.classList.add('is-invalid');
+      elTagInputError.textContent = msg;
+      elTagInputError.hidden = false;
+    }
+
+    function clearTagError() {
+      elTagInput.classList.remove('is-invalid');
+      elTagInputError.hidden = true;
+      elTagInputError.textContent = '';
+    }
+
+    function renderTags() {
+      elTagsList.innerHTML = '';
+      const slide = state.slides.find(s => s.id === state.selectedSlideId);
+      if (!slide || !slide.tags.length) return;
+
+      slide.tags.forEach(tag => {
+        const el = document.createElement('div');
+        el.className = tag.isLink ? 'tag tag--link' : 'tag';
+        el.setAttribute('role', 'listitem');
+
+        // Link chips open the Instagram profile on click (not on the X button)
+        if (tag.isLink) {
+          el.setAttribute('title', `Open @${tag.handle} on Instagram`);
+          el.addEventListener('click', ev => {
+            if (ev.target.closest('.tag__remove')) return;
+            window.open(`https://www.instagram.com/${tag.handle}/`, '_blank', 'noopener,noreferrer');
+          });
+        }
+
+        const label = document.createElement('span');
+        label.textContent = tag.handle;
+
+        const removeBtn = document.createElement('button');
+        removeBtn.className = 'tag__remove';
+        removeBtn.setAttribute('aria-label', `Remove @${tag.handle}`);
+        removeBtn.innerHTML = '<i data-lucide="x"></i>';
+        removeBtn.addEventListener('click', () => {
+          slide.tags = slide.tags.filter(t => t.handle !== tag.handle);
+          renderTags();
+          persistState();
+        });
+
+        el.appendChild(label);
+        el.appendChild(removeBtn);
+        elTagsList.appendChild(el);
+      });
+
+      lucide.createIcons({ nodes: [elTagsList] });
+    }
+
+    /* ================================================================
+       DRAG & DROP SLIDE REORDER — SortableJS
+       @vue: vue-draggable-plus  <VueDraggable v-model="slides" />
+             or @vueuse/integrations useSortable
+       @laravel: PATCH /api/posts/:id/slides/reorder  { ids: [...] }
+       ================================================================ */
+    let sortable = null;
+
+    function initSortable() {
+      if (sortable) { sortable.destroy(); sortable = null; }
+
+      sortable = new Sortable(elGallerySlides, {
+        animation: 150,
+        ghostClass: 'sortable-ghost',
+        onEnd() {
+          // Read new order from DOM and sync to state
+          const ids = [...elGallerySlides.querySelectorAll('[data-id]')]
+            .map(el => parseInt(el.getAttribute('data-id'), 10))
+            .filter(id => !isNaN(id));
+
+          state.slides = ids
+            .map(id => state.slides.find(s => s.id === id))
+            .filter(Boolean);
+
+          // Re-render to keep selection badges & icons correct (renderGallery re-attaches Sortable)
+          requestAnimationFrame(() => {
+            renderGallery();
+            persistState();
+          });
+        },
+      });
+    }
+
+    /* ================================================================
+       ADD SLIDE BUTTON
+       ================================================================ */
+    elAddSlideBtn.addEventListener('click', addSlide);
+    elAddSlideBtn.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') addSlide();
+    });
+
+    /* ================================================================
+       FOOTER ACTIONS
+       @vue:    $emit('discard') / $emit('done-editing')
+       @laravel:
+         discard     → DELETE /api/posts/:id
+         done-editing → PATCH  /api/posts/:id  { status: 'draft' }
+       ================================================================ */
+    elDiscardBtn.addEventListener('click', () => {
+      // Production: replace with a Shadcn <AlertDialog> component
+      if (!confirm('Discard all changes to this post?')) return;
+      clearPersistedState();
+      location.reload();
+    });
+
+    elDoneBtn.addEventListener('click', () => {
+      // Production: PATCH /api/posts/:id
+      alert(`"${state.postTitle}" saved as draft.\n\nProduction: PATCH /api/posts/:id`);
+    });
+
+    /* ================================================================
+       INIT
+       ================================================================ */
+    function init() {
+      // Restore any previously saved draft before rendering
+      loadPersistedState();
+
+      // Process all static Lucide icons in the DOM first
+      lucide.createIcons();
+
+      // Sync title display with (possibly restored) state
+      elTitleDisplay.textContent = state.postTitle;
+      elTitleInput.value         = state.postTitle;
+
+      syncSidebar();
+      renderGallery();   // also calls initSortable
+      syncCanvas();
+      renderTags();
+    }
+
+    init();
+  </script>
+</body>
+</html>
