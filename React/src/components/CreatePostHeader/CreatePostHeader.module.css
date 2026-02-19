@@ -1,0 +1,103 @@
+.header {
+  flex-shrink: 0;
+  height: var(--header-h);
+  background: var(--white);
+  border-bottom: 1px solid var(--slate-200);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 8px 24px;
+  overflow: hidden;
+}
+
+.toggle {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--slate-700);
+  transition: opacity var(--t-fast);
+}
+.toggle:hover { opacity: 0.6; }
+.toggle svg   { width: 16px; height: 16px; }
+
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.section {
+  font-size: var(--text-md);
+  font-weight: 600;
+  line-height: var(--lh-md);
+  color: var(--slate-700);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.sep {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  color: var(--slate-400);
+}
+.sep svg { width: 16px; height: 16px; }
+
+.titleWrap {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+
+.titleDisplay {
+  font-size: var(--text-md);
+  font-weight: 400;
+  line-height: var(--lh-md);
+  color: var(--slate-700);
+  cursor: text;
+  white-space: nowrap;
+}
+
+.titleInput {
+  height: 40px;
+  min-width: 140px;
+  background: var(--white);
+  border: 1px solid var(--slate-300);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-s);
+  padding: 8px 12px;
+  font-size: var(--text-md);
+  font-weight: 400;
+  line-height: var(--lh-md);
+  color: var(--slate-700);
+  outline: none;
+  transition: border-color var(--t-fast), box-shadow var(--t-fast);
+}
+.titleInput:focus {
+  border-color: var(--blue-500);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+}
+
+.editBtn {
+  background: none;
+  border: none;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--slate-400);
+  transition: color var(--t-fast);
+  flex-shrink: 0;
+}
+.editBtn:hover { color: var(--slate-700); }
+.editBtn svg   { width: 12px; height: 12px; }
+
+@media (max-width: 767px) {
+  .header { padding: 8px 16px; }
+}

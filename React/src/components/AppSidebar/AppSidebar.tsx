@@ -1,0 +1,90 @@
+import { useEffect } from 'react';
+import {
+  Plus, SquarePen, Calendar, SquareCheckBig,
+  PanelsTopLeft, Settings, LogOut,
+} from 'lucide-react';
+import { usePostStore } from '../../store/usePostStore';
+import styles from './AppSidebar.module.css';
+
+function isMobile() { return window.innerWidth <= 767; }
+
+export function AppSidebar() {
+  const sidebarOpen   = usePostStore(s => s.sidebarOpen);
+  const setSidebarOpen = usePostStore(s => s.setSidebarOpen);
+
+  // Always start closed on mobile after mount
+  useEffect(() => {
+    if (isMobile()) setSidebarOpen(false);
+  }, [setSidebarOpen]);
+
+  const handleNavClick = () => {
+    if (isMobile() && sidebarOpen) setSidebarOpen(false);
+  };
+
+  const sidebarClass = [
+    styles.sidebar,
+    !sidebarOpen && !isMobile() ? styles.isClosed : '',
+    isMobile() && sidebarOpen   ? styles.isMobileOpen : '',
+  ].filter(Boolean).join(' ');
+
+  const backdropClass = [
+    styles.backdrop,
+    isMobile() && sidebarOpen ? styles.isVisible : '',
+  ].filter(Boolean).join(' ');
+
+  return (
+    <>
+      <aside className={sidebarClass} aria-label="Navigation sidebar">
+
+        {/* Logo */}
+        <div className={styles.logo}>
+          <div className={styles.logoFull}>
+            <img src="/assets/tatler-logo-full.png" alt="Tatler" width={57} height={32} />
+          </div>
+          <div className={styles.logoIcon}>
+            <img src="/assets/tatler-logo-icon.png" alt="Tatler" width={32} height={32} />
+          </div>
+        </div>
+
+        {/* Create button */}
+        <div className={styles.createWrap}>
+          <button className={styles.btnCreate} aria-label="Create new post">
+            <Plus size={16} />
+            <span className={styles.btnLabel}>Create</span>
+          </button>
+        </div>
+
+        {/* Nav */}
+        <nav className={styles.nav} aria-label="Main navigation">
+          {NAV_ITEMS.map(item => (
+            <button
+              key={item.route}
+              className={`${styles.navItem}${item.route === 'drafts' ? ` ${styles.isActive}` : ''}`}
+              onClick={handleNavClick}
+            >
+              <span className={styles.navIcon}><item.icon size={16} /></span>
+              <span className={styles.navLabel}>{item.label}</span>
+            </button>
+          ))}
+        </nav>
+
+      </aside>
+
+      {/* Mobile backdrop */}
+      <div
+        className={backdropClass}
+        aria-hidden="true"
+        onClick={() => setSidebarOpen(false)}
+      />
+    </>
+  );
+}
+
+const NAV_ITEMS = [
+  { route: 'drafts',     label: 'Drafts',     icon: SquarePen       },
+  { route: 'scheduled',  label: 'Scheduled',  icon: Calendar        },
+  { route: 'published',  label: 'Published',  icon: SquareCheckBig  },
+  { route: 'templates',  label: 'Templates',  icon: PanelsTopLeft   },
+  { route: 'settings',   label: 'Settings',   icon: Settings        },
+  { route: 'logout',     label: 'Logout',     icon: LogOut          },
+];

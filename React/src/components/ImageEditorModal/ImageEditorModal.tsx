@@ -1,0 +1,131 @@
+import { useEffect, useRef } from 'react';
+import styles from './ImageEditorModal.module.css';
+
+// Filerobot Image Editor is loaded as a UMD bundle; declare global
+declare global {
+  interface Window {
+    FilerobotImageEditor: {
+      new (
+        container: HTMLElement,
+        config: Record<string, unknown>,
+      ): { render(): void; terminate(): void };
+      TABS: Record<string, string>;
+      TOOLS: Record<string, string>;
+    };
+  }
+}
+
+interface Props {
+  src: string;
+  onSave: (dataUrl: string) => void;
+  onClose: () => void;
+}
+
+/**
+ * Filerobot Image Editor wrapped in a full-screen overlay.
+ * The FIE script is loaded once from CDN via index.html; the instance
+ * is created/destroyed on mount/unmount.
+ */
+export function ImageEditorModal({ src, onSave, onClose }: Props) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const fieRef       = useRef<{ render(): void; terminate(): void } | null>(null);
+
+  useEffect(() => {
+    if (!containerRef.current || !window.FilerobotImageEditor) return;
+
+    const { TABS, TOOLS } = window.FilerobotImageEditor;
+
+    fieRef.current = new window.FilerobotImageEditor(containerRef.current, {
+      source: src,
+
+      onSave(imageData: { imageBase64?: string }) {
+        if (imageData.imageBase64) {
+          onSave(imageData.imageBase64);
+        }
+        closeSelf();
+      },
+
+      onClose() { closeSelf(); },
+
+      tabsIds: [
+        TABS.ADJUST,
+        TABS.FINETUNE,
+        TABS.FILTERS,
+        TABS.ANNOTATE,
+        TABS.WATERMARK,
+        TABS.RESIZE,
+      ],
+      defaultTabId:  TABS.ADJUST,
+      defaultToolId: TOOLS.CROP,
+
+      Crop: {
+        presetsItems: [
+          { titleKey: '4:5 (Slide)', ratio: 4 / 5 },
+          { titleKey: '1:1',         ratio: 1 },
+          { titleKey: '4:3',         ratio: 4 / 3 },
+          { titleKey: '16:9',        ratio: 16 / 9 },
+        ],
+        autoResize: true,
+      },
+
+      savingPixelRatio:  window.devicePixelRatio || 1,
+      previewPixelRatio: window.devicePixelRatio || 1,
+
+      onBeforeSave: () => false,
+      defaultSavedImageName: 'slide',
+      defaultSavedImageType: 'jpeg',
+
+      theme: {
+        palette: {
+          'bg-primary':             '#ffffff',
+          'bg-secondary':           '#f1f5f9',
+          'bg-primary-active':      'rgba(59,130,246,0.08)',
+          'accent-primary':         '#3b82f6',
+          'accent-primary-active':  '#2563eb',
+          'accent-primary-hover':   '#2563eb',
+          'accent-stateless':       '#3b82f6',
+          'icons-primary':          '#334155',
+          'icons-secondary':        '#94a3b8',
+          'borders-primary':        '#cbd5e1',
+          'borders-secondary':      '#e2e8f0',
+          'borders-strong':         '#475569',
+          'light-shadow':           'rgba(0,0,0,0.05)',
+          'warning':                '#ef4444',
+        },
+        typography: {
+          fontFamily: "'Geist', Arial, sans-serif",
+        },
+      },
+    });
+
+    fieRef.current.render();
+
+    return () => {
+      fieRef.current?.terminate();
+      fieRef.current = null;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [src]);
+
+  function closeSelf() {
+    fieRef.current?.terminate();
+    fieRef.current = null;
+    onClose();
+  }
+
+  function handleBackdropClick(e: React.MouseEvent) {
+    if (e.target === e.currentTarget) closeSelf();
+  }
+
+  return (
+    <div
+      className={styles.overlay}
+      role="dialog"
+      aria-modal="true"
+      aria-label="Image editor"
+      onClick={handleBackdropClick}
+    >
+      <div ref={containerRef} className={styles.container} />
+    </div>
+  );
+}

@@ -1,0 +1,91 @@
+/* ================================================================
+   APP SHELL
+   ================================================================ */
+.app {
+  display: flex;
+  align-items: stretch;
+  height: 100vh;
+  padding-right: 8px;
+}
+
+/* ================================================================
+   MAIN
+   ================================================================ */
+.main {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 8px 0;
+}
+
+/* White rounded card */
+.card {
+  flex: 1;
+  min-height: 0;
+  background: var(--white);
+  border: 1px solid var(--slate-200);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-s);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ================================================================
+   EDITOR
+   ================================================================ */
+.editor {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-content: flex-start;
+  gap: 24px;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 24px;
+  background: var(--white);
+  overflow: hidden;
+}
+
+.editor.isStacked {
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+.editor.isStacked :global(.details) {
+  flex-shrink: 0;
+}
+
+/* ================================================================
+   RESPONSIVE — MOBILE  (< 768px)
+   ================================================================ */
+@media (max-width: 767px) {
+  .app {
+    padding-right: 0;
+    flex-direction: column;
+  }
+
+  .main { padding: 0; }
+
+  .card {
+    border-radius: 0;
+    border: none;
+    box-shadow: none;
+    display: grid;
+    grid-template-rows: auto auto 1fr auto;
+    height: 100vh;
+  }
+
+  .editor {
+    flex-direction: column;
+    flex-wrap: nowrap;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 16px;
+    padding: 16px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}

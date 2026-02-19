@@ -1,0 +1,44 @@
+/* ================================================================
+   DESIGN TOKENS — ported from create-post.html prototype
+   ================================================================ */
+:root {
+  /* — Colour palette (Shadcn / Slate) — */
+  --white:        #ffffff;
+  --blue-500:     #3b82f6;
+  --blue-600:     #2563eb;
+  --slate-100:    #f1f5f9;
+  --slate-200:    #e2e8f0;
+  --slate-300:    #cbd5e1;
+  --slate-400:    #94a3b8;
+  --slate-600:    #475569;
+  --slate-700:    #334155;
+  --slate-900:    #0f172a;
+  --red-500:      #ef4444;
+
+  /* — Shadow — */
+  --shadow-s:     0px 2px 6px 0px rgba(0, 0, 0, 0.05);
+
+  /* — Radius — */
+  --radius-sm:    4px;
+  --radius-md:    6px;
+  --radius-lg:    8px;
+  --radius-xl:    16px;
+
+  /* — Typography — */
+  --font:         'Geist', ui-sans-serif, system-ui, sans-serif;
+  --text-sm:      14px;
+  --text-md:      16px;
+  --text-lg:      20px;
+  --lh-sm:        20px;
+  --lh-md:        24px;
+
+  /* — Layout — */
+  --sidebar-open:   240px;
+  --sidebar-closed:  72px;
+  --header-h:        56px;
+  --footer-h:        72px;
+
+  /* — Transitions — */
+  --t-fast:   150ms ease;
+  --t-normal: 200ms ease;
+}

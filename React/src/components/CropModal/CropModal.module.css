@@ -1,0 +1,15 @@
+.cropImg {
+  display: block;
+  max-width: 100%;
+}
+
+/* Cropper.js overrides */
+:global(.cropper-view-box),
+:global(.cropper-face) { border-radius: 0; }
+
+:global(.cropper-line),
+:global(.cropper-point) { background-color: var(--blue-500); }
+
+:global(.cropper-point) { width: 8px; height: 8px; opacity: 1; border-radius: 2px; }
+
+:global(.cropper-dashed) { border-color: rgba(255,255,255,0.4); }
