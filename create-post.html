@@ -795,8 +795,29 @@
         flex-direction: column;
       }
 
-      /* Hide desktop sidebar */
-      .sidebar { display: none; }
+      /* Mobile sidebar — off-screen drawer, slides in on toggle */
+      .sidebar {
+        position: fixed;
+        left: 0;
+        top: 0;
+        height: 100%;
+        z-index: 500;
+        background: var(--white);
+        transform: translateX(-100%);
+        transition: transform var(--t-normal);
+        box-shadow: 4px 0 24px rgba(0, 0, 0, 0.15);
+      }
+      .sidebar.is-mobile-open { transform: translateX(0); }
+
+      /* Backdrop — dims the page behind the open drawer */
+      .sidebar-backdrop {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.4);
+        z-index: 499;
+      }
+      .sidebar-backdrop.is-visible { display: block; }
 
       .main { padding: 0; }
 
@@ -1331,6 +1352,9 @@
       style="display:none"
     />
 
+  <!-- Mobile sidebar backdrop -->
+  <div id="sidebar-backdrop" class="sidebar-backdrop" aria-hidden="true"></div>
+
   </div><!-- /app -->
 
   <!-- ==============================================================
@@ -1422,7 +1446,8 @@
        ================================================================ */
     const $ = id => document.getElementById(id);
 
-    const elApp            = $('app');
+    const elApp             = $('app');
+    const elSidebarBackdrop = $('sidebar-backdrop');
     const elSidebar        = $('sidebar');
     const elSidebarToggle  = $('sidebar-toggle');
     const elGallerySlides  = $('gallery-slides');
@@ -1506,10 +1531,41 @@
       persistState();
     });
 
+    // Close the mobile drawer when a nav item is tapped
+    document.querySelectorAll('.nav-item').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (isMobileViewport() && state.sidebarOpen) {
+          state.sidebarOpen = false;
+          syncSidebar();
+          persistState();
+        }
+      });
+    });
+
+    function isMobileViewport() { return window.innerWidth <= 767; }
+
     function syncSidebar() {
-      elSidebar.classList.toggle('is-closed', !state.sidebarOpen);
+      if (isMobileViewport()) {
+        // Mobile: drawer slides in over content
+        elSidebar.classList.toggle('is-mobile-open', state.sidebarOpen);
+        elSidebarBackdrop.classList.toggle('is-visible', state.sidebarOpen);
+        // is-closed is irrelevant on mobile — clear it to avoid stale state
+        elSidebar.classList.remove('is-closed');
+      } else {
+        // Desktop: sidebar collapses in place
+        elSidebar.classList.toggle('is-closed', !state.sidebarOpen);
+        elSidebar.classList.remove('is-mobile-open');
+        elSidebarBackdrop.classList.remove('is-visible');
+      }
       elSidebarToggle.setAttribute('aria-expanded', String(state.sidebarOpen));
     }
+
+    // Close drawer when tapping the backdrop
+    elSidebarBackdrop.addEventListener('click', () => {
+      state.sidebarOpen = false;
+      syncSidebar();
+      persistState();
+    });
 
     /* ================================================================
        POST TITLE — INLINE EDIT
@@ -1921,13 +1977,17 @@
       if (e.target === elCropModal) closeCropModal();
     });
 
-    // Close the front-most modal on Escape
+    // Close the front-most modal / drawer on Escape
     document.addEventListener('keydown', e => {
       if (e.key !== 'Escape') return;
       if (!elImageEditorModal.classList.contains('is-hidden')) {
         closeImageEditor();
       } else if (!elCropModal.classList.contains('is-hidden')) {
         closeCropModal();
+      } else if (isMobileViewport() && state.sidebarOpen) {
+        state.sidebarOpen = false;
+        syncSidebar();
+        persistState();
       }
     });
 
@@ -2121,6 +2181,9 @@
     function init() {
       // Restore any previously saved draft before rendering
       loadPersistedState();
+
+      // Always start with the drawer closed on mobile regardless of persisted state
+      if (isMobileViewport()) state.sidebarOpen = false;
 
       // Process all static Lucide icons in the DOM first
       lucide.createIcons();
