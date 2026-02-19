@@ -56,3 +56,11 @@ The file is annotated throughout with migration hints:
 - **API calls** — each action is marked `@laravel:` with the expected HTTP method and endpoint
 
 The intended production stack is **Vue 3** (Composition API) + **Laravel** API backend. Images should be uploaded to a server and stored as CDN URLs rather than the Base64 data URLs used here.
+
+---
+
+## React conversion
+
+The `React/` folder contains a full TypeScript rewrite of this prototype using React 18 + Vite. It is a separate reference implementation — the prototype is unchanged and remains the source of truth for design decisions.
+
+See [`React/README.md`](React/README.md) for setup and Laravel integration instructions.
