@@ -23,6 +23,7 @@ Draft state (title, slides, tags, sidebar position) is automatically saved to `l
 | Tag users | Accepts `@handle` or an Instagram profile URL; renders as clickable chips |
 | Responsive | Stacks to a single column below 792 px; mobile-optimised below 768 px |
 | Draft persistence | Saves to `localStorage` on every change; survives page refresh |
+| Dark / light mode | Toggle in the sidebar; preference persisted to `localStorage` |
 
 ## Libraries (all via CDN)
 

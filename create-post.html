@@ -88,6 +88,46 @@
       --t-normal: 200ms ease;
     }
 
+    [data-theme="dark"] {
+      --white:     #1e293b;
+      --slate-100: #152030;
+      --slate-200: #334155;
+      --slate-300: #475569;
+      --slate-400: #64748b;
+      --slate-600: #334155;
+      --slate-700: #cbd5e1;
+      --slate-900: #f1f5f9;
+      --shadow-s:  0px 2px 6px 0px rgba(255, 255, 255, 0.08);
+    }
+
+    [data-theme="dark"] .sidebar-logo__full img { filter: invert(1); }
+
+    /* Nav hover — subtler on dark bg */
+    [data-theme="dark"] .nav-item:hover,
+    [data-theme="dark"] .nav-item.is-active {
+      background-color: rgba(255, 255, 255, 0.06);
+    }
+
+    /* Button text/icons stay white in dark mode */
+    [data-theme="dark"] .btn,
+    [data-theme="dark"] .btn-create {
+      color: #ffffff;
+    }
+
+    /* Secondary button states in dark mode */
+    [data-theme="dark"] .btn--secondary:hover:not(:disabled) { background: #475569; }
+    [data-theme="dark"] .btn--secondary:disabled { background: rgba(255,255,255,0.04); color: rgba(255,255,255,0.25); }
+
+    /* Disabled text input — ghost treatment so it reads as less active than enabled */
+    [data-theme="dark"] .text-input:disabled {
+      background: rgba(255,255,255,0.02);
+      border-color: rgba(255,255,255,0.06);
+    }
+    [data-theme="dark"] .text-input:disabled::placeholder { color: rgba(255,255,255,0.2); }
+
+    /* Delete slide button icon stays white in dark mode */
+    [data-theme="dark"] .slide-thumb__delete { color: #ffffff; }
+
     /* ================================================================
        RESET & BASE
        ================================================================ */
@@ -1069,6 +1109,10 @@
         <button class="nav-item" data-route="settings">
           <span class="nav-item__icon"><i data-lucide="settings"></i></span>
           <span class="nav-item__label">Settings</span>
+        </button>
+        <button class="nav-item" id="theme-toggle" aria-label="Toggle colour theme">
+          <span class="nav-item__icon"><i data-lucide="moon" id="theme-icon"></i></span>
+          <span class="nav-item__label" id="theme-label">Dark mode</span>
         </button>
         <button class="nav-item" data-route="logout">
           <span class="nav-item__icon"><i data-lucide="log-out"></i></span>
@@ -2198,6 +2242,29 @@
     }
 
     init();
+
+    /* ================================================================
+       THEME TOGGLE
+       ================================================================ */
+    const themeToggle = document.getElementById('theme-toggle');
+    const themeIcon   = document.getElementById('theme-icon');
+    const themeLabel  = document.getElementById('theme-label');
+
+    function applyTheme(isDark) {
+      document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+      themeIcon.setAttribute('data-lucide', isDark ? 'sun' : 'moon');
+      themeLabel.textContent = isDark ? 'Light mode' : 'Dark mode';
+      lucide.createIcons({ nodes: [themeToggle] });
+    }
+
+    const saved = localStorage.getItem('theme');
+    applyTheme(saved === 'dark');
+
+    themeToggle.addEventListener('click', () => {
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      localStorage.setItem('theme', isDark ? 'light' : 'dark');
+      applyTheme(!isDark);
+    });
   </script>
 </body>
 </html>
