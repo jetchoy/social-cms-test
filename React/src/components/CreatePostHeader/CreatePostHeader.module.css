@@ -92,12 +92,16 @@
   align-items: center;
   justify-content: center;
   color: var(--slate-400);
-  transition: color var(--t-fast);
+  opacity: 0;
+  transition: color var(--t-fast), opacity var(--t-fast);
   flex-shrink: 0;
 }
-.editBtn:hover { color: var(--slate-700); }
-.editBtn svg   { width: 12px; height: 12px; }
+.titleWrap:hover .editBtn { opacity: 1; }
+.editBtn:hover             { color: var(--slate-700); }
+.editBtn svg               { width: 12px; height: 12px; }
 
 @media (max-width: 767px) {
-  .header { padding: 8px 16px; }
+  .header  { padding: 8px 16px; }
+  /* Always show pencil on touch devices — no hover available */
+  .editBtn { opacity: 1; }
 }

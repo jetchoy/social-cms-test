@@ -13,30 +13,38 @@ export function AppSidebar() {
   const setSidebarOpen = usePostStore(s => s.setSidebarOpen);
 
   const [isDark, setIsDark] = useState(() => localStorage.getItem('theme') === 'dark');
+  const [mobile, setMobile] = useState(() => isMobile());
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
     localStorage.setItem('theme', isDark ? 'dark' : 'light');
   }, [isDark]);
 
-  // Always start closed on mobile after mount
+  // Close sidebar and track mobile breakpoint on resize
   useEffect(() => {
-    if (isMobile()) setSidebarOpen(false);
-  }, [setSidebarOpen]);
+    function handleResize() {
+      const nowMobile = isMobile();
+      setMobile(nowMobile);
+      if (nowMobile) setSidebarOpen(false);
+    }
+    if (mobile) setSidebarOpen(false);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [setSidebarOpen]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleNavClick = () => {
-    if (isMobile() && sidebarOpen) setSidebarOpen(false);
+    if (mobile && sidebarOpen) setSidebarOpen(false);
   };
 
   const sidebarClass = [
     styles.sidebar,
-    !sidebarOpen && !isMobile() ? styles.isClosed : '',
-    isMobile() && sidebarOpen   ? styles.isMobileOpen : '',
+    !sidebarOpen && !mobile ? styles.isClosed : '',
+    mobile && sidebarOpen   ? styles.isMobileOpen : '',
   ].filter(Boolean).join(' ');
 
   const backdropClass = [
     styles.backdrop,
-    isMobile() && sidebarOpen ? styles.isVisible : '',
+    mobile && sidebarOpen ? styles.isVisible : '',
   ].filter(Boolean).join(' ');
 
   return (
