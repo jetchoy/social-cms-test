@@ -95,6 +95,9 @@
 .deleteBtn:hover { opacity: 0.8; }
 .deleteBtn svg   { width: 12px; height: 12px; }
 
+/* Keep icon white in dark mode (--white remaps to dark navy) */
+:global([data-theme="dark"]) .deleteBtn { color: #ffffff; }
+
 /* dnd-kit drag ghost */
 .thumb.isDragging { opacity: 0.4; }
 

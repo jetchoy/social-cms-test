@@ -1,6 +1,6 @@
 # Tatler Social CMS — Create Post (React)
 
-A TypeScript rewrite of `create-post.html` using React 18 + Vite. Every feature from the prototype works: image upload, crop modal, image editor, tag users, drag-to-reorder slides, responsive layout, and localStorage draft persistence.
+A TypeScript rewrite of `create-post.html` using React 18 + Vite. Every feature from the prototype works: image upload, crop modal, image editor, tag users, drag-to-reorder slides, dark/light mode toggle, responsive layout, and localStorage draft persistence.
 
 This folder is a **reference implementation and Laravel integration handoff** — it is not a production app. The single-file prototype in the repo root remains the source of truth for design decisions.
 
@@ -92,11 +92,11 @@ src/
 ├── utils/fileValidation.ts         MAX_FILE_BYTES, ALLOWED_TYPES, validateFile
 │
 ├── styles/
-│   ├── tokens.css                  CSS variables (ported 1:1 from prototype)
-│   └── globals.css                 Reset, base, shared button/field/modal styles
+│   ├── tokens.css                  CSS variables + [data-theme="dark"] overrides
+│   └── globals.css                 Reset, base, shared button/field/modal styles, FIE overrides
 │
 └── components/
-    ├── AppSidebar/                 Collapsible nav; mobile drawer
+    ├── AppSidebar/                 Collapsible nav; mobile drawer; dark/light mode toggle
     ├── CreatePostHeader/           Breadcrumb + inline post title edit
     ├── SlideGallery/               Drag-to-reorder thumbnails (@dnd-kit)
     ├── SlideCanvas/                Image preview + drag-and-drop upload

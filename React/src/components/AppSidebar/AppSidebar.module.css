@@ -2,6 +2,7 @@
   flex-shrink: 0;
   width: var(--sidebar-open);
   height: 100vh;
+  height: 100dvh;
   display: flex;
   flex-direction: column;
   gap: 24px;
@@ -149,3 +150,19 @@
   z-index: 499;
 }
 .backdrop.isVisible { display: block; }
+
+/* ================================================================
+   DARK MODE
+   ================================================================ */
+
+/* Invert the full logo to white */
+:global([data-theme="dark"]) .logoFull img { filter: invert(1); }
+
+/* Nav hover — subtler overlay instead of a full-opacity bg swatch */
+:global([data-theme="dark"]) .navItem:hover,
+:global([data-theme="dark"]) .navItem.isActive {
+  background-color: rgba(255, 255, 255, 0.06);
+}
+
+/* Create button — keep text white (--white remaps to dark navy in dark mode) */
+:global([data-theme="dark"]) .btnCreate { color: #ffffff; }

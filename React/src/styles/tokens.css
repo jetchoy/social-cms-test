@@ -18,6 +18,7 @@
   /* — Shadow — */
   --shadow-s:     0px 2px 6px 0px rgba(0, 0, 0, 0.05);
 
+
   /* — Radius — */
   --radius-sm:    4px;
   --radius-md:    6px;
@@ -41,4 +42,19 @@
   /* — Transitions — */
   --t-fast:   150ms ease;
   --t-normal: 200ms ease;
+}
+
+/* ================================================================
+   DARK MODE — token overrides
+   ================================================================ */
+[data-theme="dark"] {
+  --white:     #1e293b;  /* card/panel/input/sidebar bg */
+  --slate-100: #152030;  /* page bg                      */
+  --slate-200: #334155;  /* borders, dividers            */
+  --slate-300: #475569;  /* input borders                */
+  --slate-400: #64748b;  /* placeholder, muted icons     */
+  --slate-600: #334155;  /* secondary button bg          */
+  --slate-700: #cbd5e1;  /* primary text                 */
+  --slate-900: #f1f5f9;  /* active nav text              */
+  --shadow-s:  0px 2px 6px 0px rgba(255, 255, 255, 0.08);
 }

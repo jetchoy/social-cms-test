@@ -19,7 +19,7 @@ Draft state (title, slides, tags, sidebar position) is automatically saved to `l
 | Slide gallery | Add, delete, reorder via drag-and-drop (SortableJS) |
 | Image upload | Browse or drag-and-drop onto the canvas. Validates type and size (max 50 MB) |
 | Crop modal | Locked to 4:5 aspect ratio (Cropper.js) |
-| Image editor | Full editing tools — adjust, filters, annotate, resize (Filerobot Image Editor) |
+| Image editor | Adjust, finetune, filters, annotate, watermark (Filerobot Image Editor). Crop and resize intentionally disabled — incompatible with the fixed 4:5 aspect ratio |
 | Tag users | Accepts `@handle` or an Instagram profile URL; renders as clickable chips |
 | Responsive | Stacks to a single column below 792 px; mobile-optimised below 768 px |
 | Draft persistence | Saves to `localStorage` on every change; survives page refresh |

@@ -207,3 +207,37 @@ button { cursor: pointer; }
   .modal-overlay { padding: 0; }
   .modal__footer .btn { flex: 1; }
 }
+
+/* ================================================================
+   DARK MODE — shared overrides
+   ================================================================ */
+
+/* Button text/icons stay white (--white maps to dark navy in dark mode) */
+[data-theme="dark"] .btn { color: #ffffff; }
+
+/* Secondary button states */
+[data-theme="dark"] .btn--secondary:hover:not(:disabled) { background: #475569; }
+[data-theme="dark"] .btn--secondary:disabled             { background: rgba(255,255,255,0.04); color: rgba(255,255,255,0.25); }
+
+/* Disabled text input — ghost treatment */
+[data-theme="dark"] .text-input:disabled              { background: rgba(255,255,255,0.02); border-color: rgba(255,255,255,0.06); }
+[data-theme="dark"] .text-input:disabled::placeholder { color: rgba(255,255,255,0.2); }
+
+/* ================================================================
+   FILEROBOT IMAGE EDITOR — hide crop / rotate / resize
+   (incompatible with fixed 4:5 aspect ratio)
+   ================================================================ */
+.FIE_crop-tool,
+.FIE_crop-presets-opener-button,
+.FIE_crop-tool-label,
+.FIE_selected-crop-preset-label,
+.FIE_rotate-tool-button { display: none !important; }
+
+/* ================================================================
+   FILEROBOT IMAGE EDITOR — dark mode overrides
+   (areas not reachable via the palette API)
+   ================================================================ */
+[data-theme="dark"] .FIE_canvas-node                                { background-color: #1e293b !important; }
+[data-theme="dark"] .FIE_tab[aria-selected="false"]                 { background-color: #1e293b !important; }
+[data-theme="dark"] .FIE_tab[aria-selected="false"] .FIE_tab-label  { color: #94a3b8 !important; }
+[data-theme="dark"] .SfxLabel-text                                  { color: #94a3b8 !important; }

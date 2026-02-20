@@ -53,20 +53,10 @@ export function ImageEditorModal({ src, onSave, onClose }: Props) {
         TABS.FILTERS,
         TABS.ANNOTATE,
         TABS.WATERMARK,
-        TABS.RESIZE,
+        // TABS.RESIZE omitted — resizing would break the fixed 4:5 aspect ratio
       ],
-      defaultTabId:  TABS.ADJUST,
-      defaultToolId: TOOLS.CROP,
-
-      Crop: {
-        presetsItems: [
-          { titleKey: '4:5 (Slide)', ratio: 4 / 5 },
-          { titleKey: '1:1',         ratio: 1 },
-          { titleKey: '4:3',         ratio: 4 / 3 },
-          { titleKey: '16:9',        ratio: 16 / 9 },
-        ],
-        autoResize: true,
-      },
+      defaultTabId: TABS.ADJUST,
+      // TOOLS.CROP and TOOLS.ROTATE omitted — both would alter the 4:5 aspect ratio
 
       savingPixelRatio:  window.devicePixelRatio || 1,
       previewPixelRatio: window.devicePixelRatio || 1,
@@ -76,7 +66,19 @@ export function ImageEditorModal({ src, onSave, onClose }: Props) {
       defaultSavedImageType: 'jpeg',
 
       theme: {
-        palette: {
+        palette: document.documentElement.getAttribute('data-theme') === 'dark' ? {
+          'bg-primary':        '#1e293b',
+          'bg-secondary':      '#152030',
+          'bg-primary-active': 'rgba(59,130,246,0.12)',
+          'icons-primary':     '#cbd5e1',
+          'icons-secondary':   '#64748b',
+          'borders-primary':   '#475569',
+          'borders-secondary': '#334155',
+          'accent-primary':    '#3b82f6',
+          'accent-stateless':  '#3b82f6',
+          'light-shadow':      'rgba(255,255,255,0.08)',
+          'warning':           '#ef4444',
+        } : {
           'bg-primary':             '#ffffff',
           'bg-secondary':           '#f1f5f9',
           'bg-primary-active':      'rgba(59,130,246,0.08)',

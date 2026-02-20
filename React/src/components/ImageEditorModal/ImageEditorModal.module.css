@@ -13,6 +13,7 @@
 .container {
   width:  min(1200px, calc(100vw - 48px));
   height: min(800px,  calc(100vh - 48px));
+  height: min(800px,  calc(100dvh - 48px));
   border-radius: var(--radius-xl);
   overflow: hidden;
   box-shadow: 0 24px 64px rgba(0, 0, 0, 0.4);

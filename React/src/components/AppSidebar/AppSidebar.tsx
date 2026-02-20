@@ -1,7 +1,7 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Plus, SquarePen, Calendar, SquareCheckBig,
-  PanelsTopLeft, Settings, LogOut,
+  PanelsTopLeft, Settings, LogOut, Moon, Sun,
 } from 'lucide-react';
 import { usePostStore } from '../../store/usePostStore';
 import styles from './AppSidebar.module.css';
@@ -11,6 +11,13 @@ function isMobile() { return window.innerWidth <= 767; }
 export function AppSidebar() {
   const sidebarOpen   = usePostStore(s => s.sidebarOpen);
   const setSidebarOpen = usePostStore(s => s.setSidebarOpen);
+
+  const [isDark, setIsDark] = useState(() => localStorage.getItem('theme') === 'dark');
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+    localStorage.setItem('theme', isDark ? 'dark' : 'light');
+  }, [isDark]);
 
   // Always start closed on mobile after mount
   useEffect(() => {
@@ -66,6 +73,24 @@ export function AppSidebar() {
               <span className={styles.navLabel}>{item.label}</span>
             </button>
           ))}
+
+          {/* Theme toggle — between Settings and Logout */}
+          <button
+            className={styles.navItem}
+            aria-label="Toggle colour theme"
+            onClick={() => setIsDark(d => !d)}
+          >
+            <span className={styles.navIcon}>{isDark ? <Sun size={16} /> : <Moon size={16} />}</span>
+            <span className={styles.navLabel}>{isDark ? 'Light mode' : 'Dark mode'}</span>
+          </button>
+
+          <button
+            className={styles.navItem}
+            onClick={handleNavClick}
+          >
+            <span className={styles.navIcon}><LogOut size={16} /></span>
+            <span className={styles.navLabel}>Logout</span>
+          </button>
         </nav>
 
       </aside>
@@ -86,5 +111,4 @@ const NAV_ITEMS = [
   { route: 'published',  label: 'Published',  icon: SquareCheckBig  },
   { route: 'templates',  label: 'Templates',  icon: PanelsTopLeft   },
   { route: 'settings',   label: 'Settings',   icon: Settings        },
-  { route: 'logout',     label: 'Logout',     icon: LogOut          },
 ];
