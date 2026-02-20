@@ -157,6 +157,7 @@
       display: flex;
       align-items: stretch;
       height: 100vh;
+      height: 100dvh;
       padding-right: 8px;
     }
 
@@ -170,6 +171,7 @@
       flex-shrink: 0;
       width: var(--sidebar-open);
       height: 100vh;
+      height: 100dvh;
       display: flex;
       flex-direction: column;
       gap: 24px;
@@ -868,6 +870,7 @@
         display: grid;
         grid-template-rows: auto auto 1fr auto;
         height: 100vh;
+        height: 100dvh;
       }
 
       /* Header */
@@ -948,6 +951,7 @@
       width: 640px;
       max-width: 100%;
       max-height: calc(100vh - 32px);
+      max-height: calc(100dvh - 32px);
       display: flex;
       flex-direction: column;
       overflow: hidden;
@@ -1036,6 +1040,7 @@
     #fie-container {
       width:  min(1200px, calc(100vw - 48px));
       height: min(800px,  calc(100vh - 48px));
+      height: min(800px,  calc(100dvh - 48px));
       border-radius: var(--radius-xl);
       overflow: hidden;
       box-shadow: 0 24px 64px rgba(0, 0, 0, 0.4);
