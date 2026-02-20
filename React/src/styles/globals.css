@@ -237,17 +237,35 @@ button { cursor: pointer; }
    FILEROBOT IMAGE EDITOR — dark mode overrides
    (areas not reachable via the palette API)
    ================================================================ */
+
 /* Canvas area */
 [data-theme="dark"] .FIE_canvas-node { background-color: #1e293b !important; }
 
-/* Tab bar container (desktop sidebar + mobile bottom bar) */
-[data-theme="dark"] .FIE_tabs        { background-color: #1e293b !important; }
+/* Top bar */
+[data-theme="dark"] .FIE_topbar,
+[data-theme="dark"] .FIE_topbar-buttons-wrapper,
+[data-theme="dark"] .FIE_topbar-center-options { background-color: #1e293b !important; }
+
+/* Tab bar container — desktop vertical sidebar + mobile horizontal bar */
+[data-theme="dark"] .FIE_tabs { background-color: #1e293b !important; }
 
 /* Individual tabs — inactive bg; active bg comes from palette bg-primary-active */
 [data-theme="dark"] .FIE_tab[aria-selected="false"] { background-color: #1e293b !important; }
 
-/* Tab labels — muted for inactive, accent-primary handles active via palette */
+/* Tab labels — muted for inactive; accent-primary in palette handles active */
 [data-theme="dark"] .FIE_tab[aria-selected="false"] .FIE_tab-label { color: #94a3b8 !important; }
+
+/* Hamburger drawer — panel that opens from the toggle button on mobile */
+[data-theme="dark"] .FIE_tabs-drawer { background-color: #1e293b !important; }
+
+/* Hamburger toggle button hover */
+[data-theme="dark"] .FIE_tabs_toggle_btn:hover { background-color: rgba(255,255,255,0.06) !important; }
+
+/* Tool options panels (mobile sidebar / desktop right panel) */
+[data-theme="dark"] .FIE_tools-bar,
+[data-theme="dark"] .FIE_tools-bar-wrapper,
+[data-theme="dark"] .FIE_tool-options-wrapper,
+[data-theme="dark"] .FIE_tools { background-color: #1e293b !important; }
 
 /* Tool labels (Contrast, Blur, Warmth, Flip X/Y, etc.) */
 [data-theme="dark"] .SfxLabel-text { color: #94a3b8 !important; }
