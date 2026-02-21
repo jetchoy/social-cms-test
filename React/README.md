@@ -93,7 +93,7 @@ src/
 │
 ├── styles/
 │   ├── tokens.css                  CSS variables + [data-theme="dark"] overrides
-│   └── globals.css                 Reset, base, shared button/field/modal styles, FIE overrides
+│   └── globals.css                 Reset, base, shared button/field/modal styles, FIE CSS fallbacks
 │
 └── components/
     ├── AppSidebar/                 Collapsible nav; mobile drawer; dark/light mode toggle
@@ -119,7 +119,7 @@ src/
 | Icons | `lucide-react` | Drop-in replacement for Lucide CDN |
 | Drag-and-drop | `@dnd-kit/core` | Best-maintained React DnD library |
 | Cropper | `cropperjs@1.6.2` | Same version as prototype |
-| Image editor | `filerobot-image-editor@4.8.1` | Same library, same config, pinned version |
+| Image editor | `filerobot-image-editor@4.8.1` | Same library, same config, pinned version. Dark mode via 34-key palette; do not add CSS overrides |
 | Font | `@fontsource/geist` | Local import replaces Google Fonts CDN |
 
 ---
