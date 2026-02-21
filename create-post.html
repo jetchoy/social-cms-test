@@ -135,57 +135,21 @@
     .FIE_selected-crop-preset-label,
     .FIE_rotate-tool-button                               { display: none !important; }
 
-    /* Filerobot Image Editor — areas not reachable via the palette API */
-
-    /* Canvas area */
+    /* FIE — canvas node bg (Konva, not driven by styled-components) */
     [data-theme="dark"] .FIE_canvas-node { background-color: #1e293b !important; }
 
-    /* Top bar */
-    [data-theme="dark"] .FIE_topbar,
-    [data-theme="dark"] .FIE_topbar-buttons-wrapper,
-    [data-theme="dark"] .FIE_topbar-center-options { background-color: #1e293b !important; }
-
-    /* Tab bar container */
-    [data-theme="dark"] .FIE_tabs { background-color: #1e293b !important; }
-
-    /* Inactive tabs */
-    [data-theme="dark"] .FIE_tab[aria-selected="false"]                { background-color: #1e293b !important; }
-    [data-theme="dark"] .FIE_tab[aria-selected="false"] .FIE_tab-label { color: #94a3b8 !important; }
-
-    /* Active tab — palette's bg-primary-active composites over white without this */
-    [data-theme="dark"] .FIE_tab[aria-selected="true"]                { background-color: rgba(59,130,246,0.15) !important; }
-    [data-theme="dark"] .FIE_tab[aria-selected="true"] .FIE_tab-label { color: #3b82f6 !important; }
-
-    /* Hamburger drawer */
-    [data-theme="dark"] .FIE_tabs-drawer { background-color: #1e293b !important; }
-
-    /* Hamburger toggle button hover */
-    [data-theme="dark"] .FIE_tabs_toggle_btn:hover { background-color: rgba(255,255,255,0.06) !important; }
-
-    /* Tool options panels */
-    [data-theme="dark"] .FIE_tools-bar,
-    [data-theme="dark"] .FIE_tools-bar-wrapper,
-    [data-theme="dark"] .FIE_tool-options-wrapper,
-    [data-theme="dark"] .FIE_tools { background-color: #1e293b !important; }
-
-    /* Tool labels */
-    [data-theme="dark"] .SfxLabel-text { color: #94a3b8 !important; }
-
-    /* Sfx button hover states */
-    [data-theme="dark"] .SfxButton-root:hover,
-    [data-theme="dark"] .SfxIconButton-root:hover { background-color: rgba(255,255,255,0.06) !important; }
-
-    /* Text / select inputs inside FIE */
-    [data-theme="dark"] .FIE_root input:not([type="range"]),
-    [data-theme="dark"] .FIE_root select {
-      background-color: #334155 !important;
-      border-color:     #475569 !important;
-      color:            #cbd5e1 !important;
+    /* FIE — carousel overflow fade; target element + pseudo-elements in case FIE uses overlays */
+    [data-theme="dark"] .FIE_carousel-next-button,
+    [data-theme="dark"] .FIE_carousel-next-button::before,
+    [data-theme="dark"] .FIE_carousel-next-button::after {
+      background: linear-gradient(to left,  #152030 40%, rgba(21,32,48,0)) !important;
+    }
+    [data-theme="dark"] .FIE_carousel-prev-button,
+    [data-theme="dark"] .FIE_carousel-prev-button::before,
+    [data-theme="dark"] .FIE_carousel-prev-button::after {
+      background: linear-gradient(to right, #152030 40%, rgba(21,32,48,0)) !important;
     }
 
-    /* Carousel fade — swap white gradient for dark */
-    [data-theme="dark"] .FIE_carousel-prev-button { background: linear-gradient(to right, #1e293b 40%, transparent) !important; }
-    [data-theme="dark"] .FIE_carousel-next-button { background: linear-gradient(to left,  #1e293b 40%, transparent) !important; }
 
     /* ================================================================
        RESET & BASE
@@ -1931,35 +1895,68 @@
         // Theme — mapped from the app's design tokens
         theme: {
           palette: document.documentElement.getAttribute('data-theme') === 'dark' ? {
-            'bg-primary':             '#1e293b',               // --white (dark)
-            'bg-secondary':           '#152030',               // --slate-100 (dark)
-            'bg-primary-active':      'rgba(59,130,246,0.12)', // blue-500 tint
-            'accent-primary':         '#3b82f6',               // --blue-500
-            'accent-primary-active':  '#2563eb',               // --blue-600
-            'accent-primary-hover':   '#2563eb',               // --blue-600
-            'accent-stateless':       '#3b82f6',               // --blue-500
-            'icons-primary':          '#cbd5e1',               // --slate-700 (dark)
-            'icons-secondary':        '#64748b',               // --slate-400 (dark)
-            'borders-primary':        '#475569',               // --slate-300 (dark)
-            'borders-secondary':      '#334155',               // --slate-200 (dark)
-            'borders-strong':         '#334155',               // --slate-600 (dark)
-            'light-shadow':           'rgba(255,255,255,0.08)', // --shadow-s (dark)
-            'warning':                '#ef4444',               // --red-500
+            'bg-primary':             '#1e293b',
+            'bg-secondary':           '#152030',
+            'bg-primary-active':      'rgba(59,130,246,0.15)',
+            'bg-primary-hover':       'rgba(255,255,255,0.06)',
+            'bg-hover':               'rgba(255,255,255,0.06)',
+            'bg-stateless':           '#1e293b',
+            'bg-base-light':          '#334155',
+            'bg-base-medium':         '#475569',
+            'txt-primary':            '#cbd5e1',
+            'txt-secondary':          '#94a3b8',
+            'txt-placeholder':        '#64748b',
+            'icons-primary':          '#cbd5e1',
+            'icons-secondary':        '#64748b',
+            'icons-muted':            '#475569',
+            'borders-primary':        '#475569',
+            'borders-secondary':      '#334155',
+            'borders-strong':         '#64748b',
+            'borders-item':           '#334155',
+            'borders-button':         '#475569',
+            'borders-disabled':       '#334155',
+            'accent-primary':         '#3b82f6',
+            'accent-primary-active':  '#2563eb',
+            'accent-primary-hover':   '#2563eb',
+            'accent-stateless':       '#3b82f6',
+            'btn-primary-text':       '#ffffff',
+            'btn-secondary-text':     '#cbd5e1',
+            'btn-disabled-text':      'rgba(203,213,225,0.4)',
+            'gradient-right':         'linear-gradient(to left,  #1e293b 40%, transparent)',
+            'gradient-right-active':  'linear-gradient(to left,  #152030 40%, transparent)',
+            'gradient-right-hover':   'linear-gradient(to left,  #334155 40%, transparent)',
+            'light-shadow':           'rgba(255,255,255,0.08)',
+            'large-shadow':           'rgba(0,0,0,0.6)',
+            'warning':                '#ef4444',
           } : {
-            'bg-primary':             '#ffffff',               // --white
-            'bg-secondary':           '#f1f5f9',               // --slate-100
-            'bg-primary-active':      'rgba(59,130,246,0.08)', // blue-500 tint for active states
-            'accent-primary':         '#3b82f6',               // --blue-500
-            'accent-primary-active':  '#2563eb',               // --blue-600
-            'accent-primary-hover':   '#2563eb',               // --blue-600 (hover)
-            'accent-stateless':       '#3b82f6',               // --blue-500
-            'icons-primary':          '#334155',               // --slate-700
-            'icons-secondary':        '#94a3b8',               // --slate-400
-            'borders-primary':        '#cbd5e1',               // --slate-300
-            'borders-secondary':      '#e2e8f0',               // --slate-200
-            'borders-strong':         '#475569',               // --slate-600
-            'light-shadow':           'rgba(0,0,0,0.05)',      // --shadow-s alpha
-            'warning':                '#ef4444',               // --red-500
+            'bg-primary':             '#ffffff',
+            'bg-secondary':           '#f1f5f9',
+            'bg-primary-active':      'rgba(59,130,246,0.08)',
+            'bg-hover':               'rgba(0,0,0,0.04)',
+            'bg-primary-hover':       'rgba(0,0,0,0.04)',
+            'bg-base-light':          '#f8fafc',
+            'bg-base-medium':         '#e2e8f0',
+            'txt-primary':            '#334155',
+            'txt-secondary':          '#64748b',
+            'txt-placeholder':        '#94a3b8',
+            'accent-primary':         '#3b82f6',
+            'accent-primary-active':  '#2563eb',
+            'accent-primary-hover':   '#2563eb',
+            'accent-stateless':       '#3b82f6',
+            'icons-primary':          '#334155',
+            'icons-secondary':        '#94a3b8',
+            'borders-primary':        '#cbd5e1',
+            'borders-secondary':      '#e2e8f0',
+            'borders-strong':         '#475569',
+            'borders-item':           '#e2e8f0',
+            'borders-button':         '#cbd5e1',
+            'btn-primary-text':       '#ffffff',
+            'gradient-right':         'linear-gradient(to left,  #ffffff 40%, transparent)',
+            'gradient-right-active':  'linear-gradient(to left,  #f1f5f9 40%, transparent)',
+            'gradient-right-hover':   'linear-gradient(to left,  #f1f5f9 40%, transparent)',
+            'light-shadow':           'rgba(0,0,0,0.05)',
+            'large-shadow':           'rgba(0,0,0,0.25)',
+            'warning':                '#ef4444',
           },
           typography: {
             fontFamily: "'Geist', Arial, sans-serif", // already loaded by the page

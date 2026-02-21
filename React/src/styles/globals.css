@@ -233,61 +233,18 @@ button { cursor: pointer; }
 .FIE_selected-crop-preset-label,
 .FIE_rotate-tool-button { display: none !important; }
 
-/* ================================================================
-   FILEROBOT IMAGE EDITOR — dark mode overrides
-   (areas not reachable via the palette API)
-   ================================================================ */
-
-/* Canvas area */
+/* FIE — canvas node bg (Konva, not driven by styled-components) */
 [data-theme="dark"] .FIE_canvas-node { background-color: #1e293b !important; }
 
-/* Top bar */
-[data-theme="dark"] .FIE_topbar,
-[data-theme="dark"] .FIE_topbar-buttons-wrapper,
-[data-theme="dark"] .FIE_topbar-center-options { background-color: #1e293b !important; }
-
-/* Tab bar container — desktop vertical sidebar + mobile horizontal bar */
-[data-theme="dark"] .FIE_tabs { background-color: #1e293b !important; }
-
-/* Inactive tab bg */
-[data-theme="dark"] .FIE_tab[aria-selected="false"] { background-color: #1e293b !important; }
-[data-theme="dark"] .FIE_tab[aria-selected="false"] .FIE_tab-label { color: #94a3b8 !important; }
-
-/* Active tab — palette's bg-primary-active composites over white without this */
-[data-theme="dark"] .FIE_tab[aria-selected="true"] { background-color: rgba(59,130,246,0.15) !important; }
-[data-theme="dark"] .FIE_tab[aria-selected="true"] .FIE_tab-label  { color: #3b82f6 !important; }
-
-/* Hamburger drawer */
-[data-theme="dark"] .FIE_tabs-drawer { background-color: #1e293b !important; }
-
-/* Hamburger toggle button hover */
-[data-theme="dark"] .FIE_tabs_toggle_btn:hover { background-color: rgba(255,255,255,0.06) !important; }
-
-/* Tool options panels */
-[data-theme="dark"] .FIE_tools-bar,
-[data-theme="dark"] .FIE_tools-bar-wrapper,
-[data-theme="dark"] .FIE_tool-options-wrapper,
-[data-theme="dark"] .FIE_tools { background-color: #1e293b !important; }
-
-/* Tool labels (Contrast, Blur, Warmth, Flip X/Y, etc.) */
-[data-theme="dark"] .SfxLabel-text { color: #94a3b8 !important; }
-
-/* Sfx button hover states */
-[data-theme="dark"] .SfxButton-root:hover,
-[data-theme="dark"] .SfxIconButton-root:hover { background-color: rgba(255,255,255,0.06) !important; }
-
-/* Text / select inputs inside FIE (styled-components uses dynamic class names) */
-[data-theme="dark"] .FIE_root input:not([type="range"]),
-[data-theme="dark"] .FIE_root select {
-  background-color: #334155 !important;
-  border-color: #475569 !important;
-  color: #cbd5e1 !important;
+/* FIE — carousel overflow fade; target element + pseudo-elements in case FIE uses overlays */
+[data-theme="dark"] .FIE_carousel-next-button,
+[data-theme="dark"] .FIE_carousel-next-button::before,
+[data-theme="dark"] .FIE_carousel-next-button::after {
+  background: linear-gradient(to left,  #152030 40%, rgba(21,32,48,0)) !important;
+}
+[data-theme="dark"] .FIE_carousel-prev-button,
+[data-theme="dark"] .FIE_carousel-prev-button::before,
+[data-theme="dark"] .FIE_carousel-prev-button::after {
+  background: linear-gradient(to right, #152030 40%, rgba(21,32,48,0)) !important;
 }
 
-/* Carousel fade — gradient overlays on prev/next buttons change from white to dark */
-[data-theme="dark"] .FIE_carousel-prev-button {
-  background: linear-gradient(to right, #1e293b 40%, transparent) !important;
-}
-[data-theme="dark"] .FIE_carousel-next-button {
-  background: linear-gradient(to left,  #1e293b 40%, transparent) !important;
-}
