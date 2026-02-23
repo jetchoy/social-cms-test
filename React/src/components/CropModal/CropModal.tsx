@@ -51,17 +51,12 @@ export function CropModal({ src, onApply, onClose }: Props) {
     onApply(canvas.toDataURL('image/jpeg', 0.92));
   }
 
-  function handleBackdropClick(e: React.MouseEvent) {
-    if (e.target === e.currentTarget) onClose();
-  }
-
   return (
     <div
       className="modal-overlay"
       role="dialog"
       aria-modal="true"
       aria-labelledby="crop-modal-title"
-      onClick={handleBackdropClick}
     >
       <div className="modal">
 

@@ -965,14 +965,14 @@
     .modal-overlay {
       position: fixed;
       inset: 0;
-      background: rgba(0, 0, 0, 0.55);
+      background: rgba(0, 0, 0, 0.75);
       backdrop-filter: blur(3px);
       -webkit-backdrop-filter: blur(3px);
       display: flex;
       align-items: center;
       justify-content: center;
       z-index: 200;
-      padding: 16px;
+      padding: 24px;
     }
     .modal-overlay.is-hidden { display: none; }
 
@@ -980,11 +980,10 @@
     .modal {
       background: var(--white);
       border-radius: var(--radius-xl);
-      box-shadow: 0 24px 64px rgba(0, 0, 0, 0.25);
-      width: 640px;
+      box-shadow: 0 24px 64px rgba(0, 0, 0, 0.4);
+      width: 900px;
       max-width: 100%;
-      max-height: calc(100vh - 32px);
-      max-height: calc(100dvh - 32px);
+      max-height: calc(100dvh - 48px);
       display: flex;
       flex-direction: column;
       overflow: hidden;
@@ -1050,7 +1049,7 @@
 
     @media (max-width: 767px) {
       .modal-overlay { padding: 0; align-items: stretch; }
-      .modal { width: 100%; height: 100dvh; max-height: 100dvh; border-radius: 0; }
+      .modal { width: 100%; height: 100dvh; max-height: 100dvh; border-radius: 0; box-shadow: none; }
       .modal__footer .btn { flex: 1; }
     }
 
@@ -2097,10 +2096,7 @@
     elCropCancelBtn.addEventListener('click', closeCropModal);
     elCropCloseBtn.addEventListener('click', closeCropModal);
 
-    // Close on backdrop click
-    elCropModal.addEventListener('click', e => {
-      if (e.target === elCropModal) closeCropModal();
-    });
+    // Backdrop click intentionally does not close the crop modal.
 
     // Close the front-most modal / drawer on Escape
     document.addEventListener('keydown', e => {
