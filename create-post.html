@@ -1988,10 +1988,7 @@
       alert('AI editor coming soon.');
     });
 
-    // Close overlay on backdrop click
-    elImageEditorModal.addEventListener('click', e => {
-      if (e.target === elImageEditorModal) closeImageEditor();
-    });
+    // Backdrop click intentionally does not close the image editor modal.
 
     /* ================================================================
        CROP MODAL

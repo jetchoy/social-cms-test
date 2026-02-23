@@ -151,17 +151,12 @@ export function ImageEditorModal({ src, onSave, onClose }: Props) {
     onClose();
   }
 
-  function handleBackdropClick(e: React.MouseEvent) {
-    if (e.target === e.currentTarget) closeSelf();
-  }
-
   return (
     <div
       className={styles.overlay}
       role="dialog"
       aria-modal="true"
       aria-label="Image editor"
-      onClick={handleBackdropClick}
     >
       <div ref={containerRef} className={styles.container} />
     </div>
